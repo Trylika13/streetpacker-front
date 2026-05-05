@@ -23,7 +23,7 @@ const handleRegister = async () => {
 
   try {
     // Utilise l'IP de ton PC comme pour le Login
-    await axios.post('http://192.168.0.2:5127/api/users/register', {
+    await axios.post('http://localhost:5174/api/users/register', {
       username: username.value,
       email: email.value,
       password: password.value
