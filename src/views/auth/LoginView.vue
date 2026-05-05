@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
-
+import api from "@/api/axios";
 const router = useRouter()
 const username = ref('')
 const password = ref('')
@@ -14,14 +13,17 @@ const login = async () => {
   loading.value = true
 
   try {
-    // N'oublie pas de remplacer par ton IP locale pour le test sur tel !
-    const response = await axios.post('http://192.168.0.2:5127/api/users/login', {
+    const response = await api.post('/users/login', {
       username: username.value,
       password: password.value
     })
 
-    // On stocke le token (à adapter selon ton store Pinia)
-    localStorage.setItem('token', response.data.token)
+    console.log("Réponse API :", response.data)
+
+    localStorage.setItem('token', response.data.accessToken)
+
+    localStorage.setItem('refreshToken', response.data.refreshToken)
+
     router.push('/dashboard')
   } catch (err: any) {
     error.value = "Identifiants incorrects. Réessaie, backpacker !"
