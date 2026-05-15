@@ -2,7 +2,7 @@ import axios from 'axios';
 
 
 const api = axios.create({
-    baseURL: 'http://192.168.0.6:5127/api',
+    baseURL: 'http://localhost:5127/api',
     headers: {
         'Content-Type': 'application/json',
     }
@@ -34,7 +34,7 @@ api.interceptors.response.use(
             }
 
             try {
-                const { data } = await axios.post('http://localhost:5127/api/users/refresh', {
+                const { data } = await api.post('/users/refresh', {
                     token,
                     refreshToken
                 });

@@ -1,5 +1,5 @@
 <template>
-  <div class="relative w-full h-[calc(100vh-64px)] overflow-hidden bg-gray-100">
+  <div class="relative w-full h-[calc(100vh-80px)] overflow-hidden bg-gray-100">
 
     <div ref="mapContainer" class="w-full h-full"></div>
 
@@ -13,23 +13,23 @@
     >
       <div
           v-if="selectedSpot"
-          class="absolute bottom-0 left-0 right-0 z-[1000] bg-white rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.2)] p-6 pb-12"
+          class="absolute bottom-0 left-0 right-0 z-[1000] bg-[#0d161c] border-t border-white/5 text-white rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.4)] p-6 pb-12 max-w-md mx-auto"
       >
-        <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
+        <div class="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-6"></div>
 
         <div class="flex justify-between items-start mb-4">
           <div>
-            <h2 class="text-2xl font-bold text-gray-900 tracking-tight">
+            <h2 class="text-2xl font-black text-white uppercase tracking-tight">
               {{ selectedSpot.title || selectedSpot.Title }}
             </h2>
-            <p class="text-xs font-bold text-emerald-600 uppercase tracking-widest mt-1">
+            <p class="text-xs font-black text-[#00cba9] uppercase tracking-widest mt-1">
               Spot StreetPacker
             </p>
           </div>
 
           <button
               @click="selectedSpot = null"
-              class="p-2 bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
+              class="p-2 bg-[#112220] rounded-full text-teal-500/50 hover:text-white transition-colors border border-white/5"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -37,18 +37,18 @@
           </button>
         </div>
 
-        <p class="text-gray-600 leading-relaxed mb-8">
+        <p class="text-teal-100/60 leading-relaxed mb-8 text-sm">
           {{ selectedSpot.description || selectedSpot.Description || 'Aucune description disponible pour ce lieu de bivouac ou de passage.' }}
         </p>
 
         <div class="flex gap-3">
           <button
-              class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-emerald-100 active:scale-95 transition-all text-center"
+              class="flex-1 bg-gradient-to-r from-[#ff7e5f] to-[#feb47b] text-[#0d161c] font-black py-4 rounded-2xl shadow-lg shadow-[#ff7e5f]/10 active:scale-95 transition-all text-center uppercase tracking-wider text-sm"
           >
             Y aller
           </button>
 
-          <button class="px-5 bg-gray-100 text-gray-700 rounded-2xl hover:bg-gray-200 transition-colors">
+          <button class="px-5 bg-[#112220] text-teal-500 rounded-2xl hover:bg-[#162d2a] border border-[#1a3532] transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
@@ -56,25 +56,91 @@
         </div>
       </div>
     </transition>
+
+    <transition
+        enter-active-class="transform transition ease-out duration-300"
+        enter-from-class="translate-y-full"
+        enter-to-class="translate-y-0"
+        leave-active-class="transform transition ease-in duration-200"
+        leave-from-class="translate-y-0"
+        leave-to-class="translate-y-full"
+    >
+      <div
+          v-if="newSpotCoords"
+          class="absolute bottom-0 left-0 right-0 z-[1000] bg-[#0d161c] border-t border-white/5 text-white rounded-t-3xl p-6 pb-12 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] max-w-md mx-auto"
+      >
+        <div class="w-12 h-1 bg-white/10 rounded-full mx-auto mb-6"></div>
+
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h3 class="text-2xl font-black uppercase tracking-tight text-[#00cba9]">Nouveau Spot</h3>
+            <p class="text-[10px] text-white/30 font-mono mt-1">
+              📍 LAT: {{ newSpotCoords.lat.toFixed(5) }} | LNG: {{ newSpotCoords.lng.toFixed(5) }}
+            </p>
+          </div>
+          <button @click="emit('close-form')" class="text-white/40 font-black text-xs uppercase tracking-wider hover:text-white transition-colors">Annuler</button>
+        </div>
+
+        <form @submit.prevent="submitNewSpot" class="space-y-4">
+          <div class="space-y-1">
+            <label class="text-[9px] uppercase tracking-widest text-teal-500 font-black ml-1">Nom du spot</label>
+            <input
+                v-model="newSpotTitle"
+                type="text"
+                placeholder="Ex: Source d'eau ou Bivouac de Blegny"
+                class="w-full h-12 bg-[#112220] border border-[#1a3532] rounded-xl px-4 text-sm outline-none focus:border-[#ff7e5f] transition-all placeholder:text-teal-900/30"
+                required
+            />
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-[9px] uppercase tracking-widest text-teal-500 font-black ml-1">Description</label>
+            <textarea
+                v-model="newSpotDescription"
+                placeholder="Donne des infos utiles (accès, sécurité...)"
+                rows="3"
+                class="w-full bg-[#112220] border border-[#1a3532] rounded-xl p-4 text-sm outline-none focus:border-[#ff7e5f] transition-all resize-none placeholder:text-teal-900/30"
+                required
+            ></textarea>
+          </div>
+
+          <button
+              type="submit"
+              :disabled="isSubmitting"
+              class="w-full h-12 bg-gradient-to-r from-[#00cba9] to-[#009b82] text-[#0d161c] font-black rounded-xl uppercase tracking-wider text-xs active:scale-95 transition-all mt-2 disabled:opacity-50"
+          >
+            {{ isSubmitting ? 'Enregistrement...' : 'Partager le spot' }}
+          </button>
+        </form>
+      </div>
+    </transition>
+
   </div>
 </template>
 
 <script setup>
 import { ref, shallowRef, onMounted, onUnmounted, watch } from 'vue';
-import {config, GeolocateControl, Map, MapStyle, Marker} from '@maptiler/sdk';
+import { config, GeolocateControl, Map, MapStyle, Marker } from '@maptiler/sdk';
+import api from '@/api/axios'; // On utilise ton axios configuré
 import '@maptiler/sdk/dist/maptiler-sdk.css';
 
 const props = defineProps({
-  spots: {
-    type: Array,
-    default: () => []
-  }
+  spots: { type: Array, default: () => [] },
+  isAddingMode: { type: Boolean, default: false },
+  newSpotCoords: { type: Object, default: null }
 });
+
+const emit = defineEmits(['coords-captured', 'close-form', 'spot-created']);
 
 const mapContainer = ref(null);
 const map = shallowRef(null);
 const markers = ref([]);
 const selectedSpot = ref(null);
+
+// Formulaire states
+const newSpotTitle = ref('');
+const newSpotDescription = ref('');
+const isSubmitting = ref(false);
 
 onMounted(() => {
   config.apiKey = '4FOCYl0j1EWf7D5remSs';
@@ -82,7 +148,7 @@ onMounted(() => {
   if (mapContainer.value) {
     map.value = new Map({
       container: mapContainer.value,
-      style: MapStyle.BASE,
+      style: MapStyle.OPENSTREETMAP,
       center: [5.694040, 50.679083],
       zoom: 13,
       navigationControl: false,
@@ -90,20 +156,45 @@ onMounted(() => {
     });
 
     const geolocate = new GeolocateControl({
-      positionOptions: {
-        enableHighAccuracy: true
-      },
-      trackUserLocation: true, // Suit l'utilisateur s'il bouge
-      showUserLocation: true   // Affiche le point bleu
+      positionOptions: { enableHighAccuracy: true },
+      trackUserLocation: true,
+      showUserLocation: true
     });
     map.value.addControl(geolocate);
-    // Attendre que le style soit chargé avant de mettre les markers
+
     map.value.on('load', () => {
       if (props.spots.length > 0) {
         displaySpots();
       }
       geolocate.trigger();
+
+      // ÉCOUTE DU CLIC SUR LA CARTE POUR L'AJOUT
+      map.value.on('click', (e) => {
+        if (props.isAddingMode) {
+          const { lat, lng } = e.lngLat;
+          selectedSpot.value = null; // Ferme le volet classique au cas où
+          emit('coords-captured', { lat, lng });
+        } else {
+          // Si on clique au pif sur la carte hors mode ajout, on ferme le volet ouvert
+          selectedSpot.value = null;
+        }
+      });
     });
+  }
+});
+
+// Watcher pour le curseur de la souris (crosshair en mode ajout)
+watch(() => props.isAddingMode, (newVal) => {
+  if (mapContainer.value) {
+    mapContainer.value.style.cursor = newVal ? 'crosshair' : '';
+  }
+});
+
+// Watcher pour vider le formulaire quand le volet se ferme
+watch(() => props.newSpotCoords, (newVal) => {
+  if (!newVal) {
+    newSpotTitle.value = '';
+    newSpotDescription.value = '';
   }
 });
 
@@ -114,7 +205,6 @@ watch(() => props.spots, () => {
 const displaySpots = () => {
   if (!map.value) return;
 
-  // Nettoyage propre
   markers.value.forEach(m => m.remove());
   markers.value = [];
 
@@ -123,20 +213,20 @@ const displaySpots = () => {
     const lat = spot.latitude;
 
     if (lng && lat) {
-      const marker = new Marker({ color: "#059669" })
+      const marker = new Marker({ color: "#00cba9" }) // Passé en Teal pour aller avec ton thème
           .setLngLat([lng, lat])
           .addTo(map.value);
 
-      // Gestion du clic pour ouvrir le Bottom Sheet
       marker.getElement().addEventListener('click', (e) => {
         e.stopPropagation();
+        if (props.isAddingMode) return; // Désactive la sélection de spot si on cherche à ajouter
+
         selectedSpot.value = spot;
 
-        // Centrer avec décalage pour le volet
         map.value.flyTo({
           center: [lng, lat],
           zoom: 15,
-          padding: { bottom: 300 }, // Place pour le texte en bas
+          padding: { bottom: 300 },
           essential: true
         });
       });
@@ -146,15 +236,35 @@ const displaySpots = () => {
   });
 };
 
-onUnmounted(() => {
-  if (map.value) {
-    map.value.remove();
+// ENVOI DU NOUVEAU SPOT À TON API C#
+const submitNewSpot = async () => {
+  if (!props.newSpotCoords) return;
+  isSubmitting.value = true;
+
+  try {
+    await api.post('/spots', {
+      title: newSpotTitle.value,
+      description: newSpotDescription.value,
+      latitude: props.newSpotCoords.lat,
+      longitude: props.newSpotCoords.lng
+    });
+
+    // On prévient le dashboard que c'est réussi pour rafraîchir la liste
+    emit('spot-created');
+  } catch (error) {
+    console.error("Erreur lors de la création du spot :", error);
+    alert("Impossible d'enregistrer ton spot pour le moment.");
+  } finally {
+    isSubmitting.value = false;
   }
+};
+
+onUnmounted(() => {
+  if (map.value) map.value.remove();
 });
 </script>
 
 <style scoped>
-/* Suppression de l'attribution pour un look "App native" */
 :deep(.maplibregl-ctrl-bottom-right),
 :deep(.maplibregl-ctrl-bottom-left) {
   display: none !important;
