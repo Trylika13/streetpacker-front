@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import api from "@/api/axios";
+import api from "../../api/axios";
 
 const router = useRouter()
 const username = ref('')
@@ -14,7 +14,7 @@ const login = async () => {
   loading.value = true
 
   try {
-    const response = await api.post('/users/login', {
+    const response = await api.post('/auth/login', {
       username: username.value,
       password: password.value
     })
