@@ -34,7 +34,7 @@ api.interceptors.response.use(
             }
 
             try {
-                const { data } = await api.post('/users/refresh', {
+                const { data } = await api.post('/auth/refresh', {
                     token,
                     refreshToken
                 });

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import api from "@/api/axios"; // On utilise ton instance configurée
+import api from "../../api/axios";
 
 const router = useRouter()
 const username = ref('')
@@ -23,7 +23,7 @@ const handleRegister = async () => {
 
   try {
     // L'URL relative suffit si ton instance axios a déjà la baseURL configurée
-    await api.post('/users/register', {
+    await api.post('/auth/register', {
       username: username.value,
       email: email.value,
       password: password.value
