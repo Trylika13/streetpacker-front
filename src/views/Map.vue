@@ -41,6 +41,10 @@
           {{ selectedSpot.description || selectedSpot.Description || 'Aucune description disponible pour ce lieu de bivouac ou de passage.' }}
         </p>
 
+        <div v-if="selectedSpot.imageUrl || selectedSpot.ImageUrl" class="w-full h-48 rounded-2xl overflow-hidden mb-8 border border-white/5">
+          <img :src="selectedSpot.imageUrl || selectedSpot.ImageUrl" class="w-full h-full object-cover" />
+        </div>
+
         <div class="flex gap-3">
           <button
               class="flex-1 bg-gradient-to-r from-[#ff7e5f] to-[#feb47b] text-[#0d161c] font-black py-4 rounded-2xl shadow-lg shadow-[#ff7e5f]/10 active:scale-95 transition-all text-center uppercase tracking-wider text-sm"
@@ -82,6 +86,29 @@
         </div>
 
         <form @submit.prevent="submitNewSpot" class="space-y-4">
+          <div class="space-y-1 text-center">
+            <div 
+              @click="triggerSpotImageUpload"
+              class="w-full h-32 bg-[#112220] border border-dashed border-[#1a3532] rounded-xl flex items-center justify-center overflow-hidden cursor-pointer hover:border-[#00cba9] transition-colors"
+            >
+              <img v-if="newSpotImageUrl" :src="newSpotImageUrl" class="w-full h-full object-cover" />
+              <div v-else class="flex flex-col items-center text-teal-900/30">
+                <span class="text-2xl">📸</span>
+                <span class="text-[9px] uppercase font-black mt-2">Ajouter une photo</span>
+              </div>
+              
+              <div v-if="isUploadingSpotImage" class="absolute inset-0 bg-[#0d161c]/60 flex items-center justify-center">
+                <div class="w-6 h-6 border-2 border-[#00cba9] border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            </div>
+            <input 
+              type="file" 
+              ref="spotImageInput" 
+              class="hidden" 
+              accept="image/*" 
+              @change="handleSpotImageChange" 
+            />
+          </div>
           <div class="space-y-1">
             <label class="text-[9px] uppercase tracking-widest text-teal-500 font-black ml-1">Nom du spot</label>
             <input
@@ -121,7 +148,8 @@
 <script setup>
 import { ref, shallowRef, onMounted, onUnmounted, watch } from 'vue';
 import { config, GeolocateControl, Map, MapStyle, Marker } from '@maptiler/sdk';
-import api from '@/api/axios'; // On utilise ton axios configuré
+import api from '@/api/axios'
+import { compressImage, uploadImage } from '@/api/mediaService'; // On utilise ton axios configuré
 import '@maptiler/sdk/dist/maptiler-sdk.css';
 
 const props = defineProps({
@@ -140,7 +168,10 @@ const selectedSpot = ref(null);
 // Formulaire states
 const newSpotTitle = ref('');
 const newSpotDescription = ref('');
-const isSubmitting = ref(false);
+const isSubmitting = ref(false)
+const newSpotImageUrl = ref('')
+const isUploadingSpotImage = ref(false)
+const spotImageInput = ref(null);
 
 onMounted(() => {
   config.apiKey = '4FOCYl0j1EWf7D5remSs';
@@ -195,6 +226,7 @@ watch(() => props.newSpotCoords, (newVal) => {
   if (!newVal) {
     newSpotTitle.value = '';
     newSpotDescription.value = '';
+    newSpotImageUrl.value = ''
   }
 });
 
@@ -236,6 +268,29 @@ const displaySpots = () => {
   });
 };
 
+
+const handleSpotImageChange = async (event) => {
+  const target = event.target;
+  const file = target.files?.[0];
+  if (!file) return;
+
+  try {
+    isUploadingSpotImage.value = true;
+    const compressedFile = await compressImage(file);
+    const { url } = await uploadImage(compressedFile);
+    newSpotImageUrl.value = url;
+  } catch (err) {
+    console.error("Erreur spot image upload:", err);
+    alert("Impossible d'uploader l'image.");
+  } finally {
+    isUploadingSpotImage.value = false;
+  }
+}
+
+const triggerSpotImageUpload = () => {
+  spotImageInput.value?.click();
+}
+
 // ENVOI DU NOUVEAU SPOT À TON API C#
 const submitNewSpot = async () => {
   if (!props.newSpotCoords) return;
@@ -246,7 +301,8 @@ const submitNewSpot = async () => {
       title: newSpotTitle.value,
       description: newSpotDescription.value,
       latitude: props.newSpotCoords.lat,
-      longitude: props.newSpotCoords.lng
+      longitude: props.newSpotCoords.lng,
+      imageUrl: newSpotImageUrl.value
     });
 
     // On prévient le dashboard que c'est réussi pour rafraîchir la liste
@@ -268,5 +324,9 @@ onUnmounted(() => {
 :deep(.maplibregl-ctrl-bottom-right),
 :deep(.maplibregl-ctrl-bottom-left) {
   display: none !important;
+}
+
+:deep(.maplibregl-ctrl-top-right) {
+  margin-top: 40px !important;
 }
 </style>
