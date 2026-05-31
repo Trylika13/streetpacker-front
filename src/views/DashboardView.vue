@@ -61,7 +61,7 @@ onMounted(() => {
     <transition name="slide-down">
       <div
           v-if="isAddingMode"
-          class="absolute top-6 left-0 right-0 z-[3000] flex justify-center px-4 pointer-events-none"
+          class="absolute top-14 left-0 right-0 z-[3000] flex justify-center px-4 pointer-events-none"
       >
         <div class="bg-[#ff7e5f] text-[#0d161c] px-6 py-3 rounded-full font-black uppercase text-xs tracking-wider shadow-xl shadow-[#ff7e5f]/20 animate-bounce text-center max-w-xs sm:max-w-md pointer-events-auto">
           📍 Touche la carte pour placer le spot
