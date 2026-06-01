@@ -1,51 +1,53 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import geckoLogo from '@/assets/gecko.svg'
+import geckoLogo from '@/assets/gecko.svg';
 const router = useRouter();
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#0d161c] flex flex-col lg:flex-row items-center justify-center px-6 py-10 overflow-hidden font-sans">
+  <div class="min-h-screen bg-[#F4F7F5] text-[#1E2E2A] flex items-center justify-center font-sans relative overflow-hidden selection:bg-[#00A896]/20">
 
-    <div class="flex flex-col lg:flex-row items-center justify-between w-full max-w-5xl gap-12 lg:gap-20">
+    <div class="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-[#FF6B6B]/10 blur-[100px] pointer-events-none"></div>
+    <div class="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-[#00A896]/10 blur-[100px] pointer-events-none"></div>
 
-      <div class="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left">
-        <div class="relative group mb-8">
-          <div class="absolute -inset-4 bg-[#ff7e5f]/10 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+    <div class="w-full max-w-5xl px-6 py-12 flex flex-col lg:flex-row lg:items-center justify-between gap-16 z-10">
 
-          <div class="relative w-36 h-36 lg:w-48 lg:h-48 rounded-[2.5rem] bg-[#112220] flex items-center justify-center border border-white/5 shadow-2xl transition-transform group-hover:rotate-3">
-            <img :src="geckoLogo" alt="StreetPacker Gecko" class="w-24 h-24 lg:w-32 lg:h-32 object-contain" />
-          </div>
+      <div class="flex flex-col items-start max-w-sm">
+        <div class="flex items-center gap-3 mb-6 opacity-90">
+          <img :src="geckoLogo" alt="StreetPacker Gecko" class="w-8 h-8 object-contain" />
         </div>
 
-        <h1 class="text-4xl lg:text-7xl font-black text-white mb-4 tracking-tight leading-none">
-          STREET<span class="text-[#ff7e5f] block lg:inline">PACKER</span>
+        <h1 class="text-5xl lg:text-7xl font-light tracking-tight text-[#1E2E2A] leading-none mb-6">
+          Street<span class="font-medium text-[#FF6B6B]">packer</span>
         </h1>
 
-        <p class="text-teal-100/60 max-w-[280px] lg:max-w-md text-sm lg:text-lg leading-relaxed font-medium">
-          L'application communautaire par les backpackers, pour les backpackers.
-          <span class="hidden lg:block mt-2 text-teal-500/40 italic">Explorez, partagez, voyagez autrement.</span>
-        </p>
+        <p class="text-sm text-[#5C756E] leading-relaxed">
+          Partage tes spots cachés, localise les points d'eau essentiels et voyage hors des sentiers battus. Conçu par et pour les backpackers.        </p>
       </div>
 
-      <div class="w-full max-w-sm space-y-4 flex flex-col shrink-0">
+      <div class="w-full max-w-sm bg-white border border-[#E4ECE9] p-8 lg:p-10 rounded-[2rem] shadow-sm flex flex-col gap-4">
+
+        <p class="text-[10px] uppercase tracking-[0.2em] text-[#5C756E] font-semibold mb-2">
+          Prêt pour l'exploration ?
+        </p>
+
         <button
             @click="router.push('/login')"
-            class="w-full h-14 lg:h-16 rounded-2xl bg-gradient-to-r from-[#ff7e5f] to-[#feb47b] text-[#0d161c] font-black shadow-lg shadow-[#ff7e5f]/20 active:scale-95 hover:brightness-110 transition-all uppercase tracking-wider"
+            class="w-full h-14 rounded-xl bg-[#00A896] text-white font-medium text-sm tracking-wide active:scale-[0.98] hover:bg-[#009282] transition-all shadow-sm"
         >
           Se connecter
         </button>
 
         <button
             @click="router.push('/register')"
-            class="w-full h-14 lg:h-16 rounded-2xl bg-[#112220] text-[#00cba9] border border-[#1a3532] font-bold active:scale-95 hover:bg-[#162d2a] transition-all"
+            class="w-full h-14 rounded-xl bg-[#F4F7F5] text-[#1E2E2A] text-sm font-medium active:scale-[0.98] hover:bg-[#EAF0EC] transition-all"
         >
           Créer un compte
         </button>
 
-        <p class="text-center lg:text-right text-[10px] uppercase tracking-[0.2em] text-teal-500/50 pt-4 font-bold">
-          L'aventure commence ici
-        </p>
+        <div class="mt-4 pt-4 border-t border-[#F4F7F5] flex justify-between items-center text-[10px] uppercase tracking-wider text-[#5C756E]/60">
+          <span>Version 1.1.0</span>
+        </div>
       </div>
 
     </div>
@@ -53,5 +55,9 @@ const router = useRouter();
 </template>
 
 <style scoped>
-
+/* Rendu ultra-propre sur les écrans Retina/MacBook */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 </style>
