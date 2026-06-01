@@ -39,91 +39,108 @@ const handleRegister = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#0d161c] text-white flex flex-col items-center overflow-x-hidden font-sans">
+  <!-- h-screen et overflow-hidden empêchent le scroll global de la page -->
+  <div class="h-screen w-screen bg-[#F4F7F5] text-[#1E2E2A] flex items-center justify-center font-sans relative overflow-hidden selection:bg-[#00A896]/20">
 
-    <div class="w-full max-w-lg lg:max-w-5xl flex flex-col lg:flex-row min-h-screen lg:items-center lg:gap-16 p-6 lg:p-12">
+    <!-- Touche Tropicale Radicale : Halos ultra-flous en arrière-plan -->
+    <div class="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-[#FF6B6B]/10 blur-[100px] pointer-events-none"></div>
+    <div class="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-[#00A896]/10 blur-[100px] pointer-events-none"></div>
 
-      <div class="flex-1 lg:text-left">
-        <div class="mt-4 lg:mt-0 mb-8">
+    <!-- Conteneur principal bridé en hauteur max -->
+    <div class="w-full max-w-5xl px-6 h-full max-h-[850px] flex flex-col lg:flex-row lg:items-center justify-center lg:justify-between gap-8 lg:gap-16 z-10 py-4">
+
+      <!-- Section Gauche : Message & Retour -->
+      <div class="flex flex-col items-start justify-center shrink-0">
+        <!-- Bouton Retour Minimaliste -->
+        <div class="mb-4 lg:mb-8">
           <button
               @click="router.push('/')"
-              class="group text-[#00cba9] flex items-center gap-2 font-black text-[10px] uppercase tracking-[0.2em] hover:brightness-125 transition-all"
+              class="group text-[#00A896] flex items-center gap-2 font-medium text-[11px] uppercase tracking-[0.2em] transition-all"
           >
-            <span class="text-lg transition-transform group-hover:-translate-x-1">←</span> Retour
+            <span class="text-sm transition-transform group-hover:-translate-x-1">←</span> Retour
           </button>
         </div>
 
-        <div class="mb-8 lg:mb-0">
-          <h2 class="text-4xl lg:text-6xl font-black text-white uppercase tracking-tighter leading-tight">
+        <div class="max-w-sm">
+          <h2 class="text-3xl lg:text-5xl font-light tracking-tight text-[#1E2E2A] leading-tight mb-3">
             Créer ton <br/>
-            <span class="text-[#00cba9]">profil nomade</span>
+            <span class="font-medium text-[#00A896]">profil de backpacker</span>
           </h2>
-          <p class="text-teal-100/50 text-sm lg:text-lg mt-4 max-w-[280px] lg:max-w-md">
-            Rejoins la communauté pour partager tes spots et explorer le monde avec nous.
+          <p class="text-xs lg:text-sm text-[#5C756E] leading-relaxed">
+            Rejoins la communauté pour partager tes spots secrets et explorer le monde autrement.
           </p>
         </div>
       </div>
 
-      <div class="flex-1 w-full max-w-md mx-auto lg:mx-0">
-        <form @submit.prevent="handleRegister" class="flex flex-col gap-4 bg-[#112220]/30 lg:bg-[#112220]/50 p-1 lg:p-8 rounded-[2rem] border border-white/5 lg:backdrop-blur-sm">
+      <!-- Section Droite : Boîtier Formulaire PWA -->
+      <!-- overflow-y-auto au cas où un très petit écran (type iPhone SE) manque de place en hauteur -->
+      <div class="w-full max-w-md mx-auto lg:mx-0 overflow-y-auto max-h-[75vh] lg:max-h-none no-scrollbar shrink-0">
+        <form @submit.prevent="handleRegister" class="flex flex-col gap-5 bg-white border border-[#E4ECE9] p-6 lg:p-10 rounded-[2rem] shadow-sm">
 
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div class="space-y-1 lg:col-span-2">
-              <label class="text-[10px] uppercase tracking-[0.2em] text-teal-500 font-black ml-1">Username</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+            <!-- Input Username -->
+            <div class="relative border-b border-[#E4ECE9] focus-within:border-[#00A896] transition-colors pb-1 sm:col-span-2">
+              <label class="block text-[10px] uppercase tracking-[0.2em] text-[#5C756E] font-semibold mb-1">Username</label>
               <input
                   v-model="username"
                   type="text"
                   placeholder="JeanLeBackpacker"
-                  class="w-full h-14 bg-[#112220] border border-[#1a3532] rounded-2xl px-5 text-white focus:border-[#00cba9] outline-none transition-all placeholder:text-teal-900/50"
+                  class="w-full bg-transparent text-sm text-[#1E2E2A] outline-none placeholder:text-[#1E2E2A]/20 h-8"
               />
             </div>
 
-            <div class="space-y-1 lg:col-span-2">
-              <label class="text-[10px] uppercase tracking-[0.2em] text-teal-500 font-black ml-1">Email</label>
+            <!-- Input Email -->
+            <div class="relative border-b border-[#E4ECE9] focus-within:border-[#00A896] transition-colors pb-1 sm:col-span-2">
+              <label class="block text-[10px] uppercase tracking-[0.2em] text-[#5C756E] font-semibold mb-1">Email</label>
               <input
                   v-model="email"
                   type="email"
                   placeholder="jean@backpack.com"
-                  class="w-full h-14 bg-[#112220] border border-[#1a3532] rounded-2xl px-5 text-white focus:border-[#00cba9] outline-none transition-all placeholder:text-teal-900/50"
+                  class="w-full bg-transparent text-sm text-[#1E2E2A] outline-none placeholder:text-[#1E2E2A]/20 h-8"
               />
             </div>
 
-            <div class="space-y-1">
-              <label class="text-[10px] uppercase tracking-[0.2em] text-teal-500 font-black ml-1">Mot de passe</label>
+            <!-- Input Mot de passe -->
+            <div class="relative border-b border-[#E4ECE9] focus-within:border-[#FF6B6B] transition-colors pb-1">
+              <label class="block text-[10px] uppercase tracking-[0.2em] text-[#5C756E] font-semibold mb-1">Mot de passe</label>
               <input
                   v-model="password"
                   type="password"
                   placeholder="••••••••"
-                  class="w-full h-14 bg-[#112220] border border-[#1a3532] rounded-2xl px-5 text-white focus:border-[#ff7e5f] outline-none transition-all placeholder:text-teal-900/50"
+                  class="w-full bg-transparent text-sm text-[#1E2E2A] outline-none placeholder:text-[#1E2E2A]/20 h-8"
               />
             </div>
 
-            <div class="space-y-1">
-              <label class="text-[10px] uppercase tracking-[0.2em] text-[#ff7e5f] font-black ml-1">Confirmer</label>
+            <!-- Input Confirmer -->
+            <div class="relative border-b border-[#E4ECE9] focus-within:border-[#FF6B6B] transition-colors pb-1">
+              <label class="block text-[10px] uppercase tracking-[0.2em] text-[#FF6B6B] font-semibold mb-1">Confirmer</label>
               <input
                   v-model="confirmPassword"
                   type="password"
                   placeholder="••••••••"
-                  class="w-full h-14 bg-[#112220] border border-[#1a3532] rounded-2xl px-5 text-white focus:border-[#ff7e5f] outline-none transition-all placeholder:text-teal-900/50"
+                  class="w-full bg-transparent text-sm text-[#1E2E2A] outline-none placeholder:text-[#1E2E2A]/20 h-8"
               />
             </div>
           </div>
 
+          <!-- Message d'erreur discret -->
           <transition name="fade">
-            <p v-if="error" class="text-[#ff7e5f] text-xs font-bold text-center bg-[#ff7e5f]/10 py-3 rounded-xl border border-[#ff7e5f]/20">
+            <p v-if="error" class="text-[#FF6B6B] text-xs font-medium text-center bg-[#FF6B6B]/5 py-2.5 rounded-xl border border-[#FF6B6B]/10 my-0">
               {{ error }}
             </p>
           </transition>
 
-          <div class="pt-4 pb-6 lg:pb-0">
+          <!-- Bouton d'action principal -->
+          <div class="pt-1">
             <button
                 type="submit"
                 :disabled="loading"
-                class="w-full h-16 bg-gradient-to-r from-[#00cba9] to-[#009b82] text-[#0d161c] font-black rounded-2xl shadow-lg shadow-[#00cba9]/20 active:scale-[0.98] hover:brightness-110 transition-all uppercase tracking-widest disabled:opacity-50"
+                class="w-full h-12 bg-[#00A896] text-white font-medium text-sm tracking-wide rounded-xl active:scale-[0.98] transition-all disabled:opacity-40 shadow-sm flex items-center justify-center"
             >
-              <span v-if="!loading">C'est parti !</span>
-              <span v-else class="flex items-center justify-center gap-2">
-                <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
+              <span v-if="!loading">Créer mon compte</span>
+              <span v-else class="flex items-center gap-2">
+                <svg class="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
@@ -140,9 +157,18 @@ const handleRegister = async () => {
 
 <style scoped>
 .fade-enter-active, .fade-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity 0.2s ease;
 }
 .fade-enter-from, .fade-leave-to {
   opacity: 0;
+}
+
+/* Évite les barres de défilement moches sur les formulaires compacts */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 </style>

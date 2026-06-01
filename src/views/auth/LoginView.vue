@@ -32,69 +32,72 @@ const login = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#0d161c] text-white flex flex-col items-center overflow-x-hidden font-sans">
+  <div class="min-h-screen bg-[#F4F7F5] text-[#1E2E2A] flex items-center justify-center font-sans relative overflow-hidden selection:bg-[#00A896]/20">
 
-    <div class="w-full max-w-lg lg:max-w-4xl flex flex-col lg:flex-row min-h-screen lg:items-center lg:gap-16 p-6 lg:p-12">
+    <div class="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-[#FF6B6B]/10 blur-[100px] pointer-events-none"></div>
+    <div class="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-[#00A896]/10 blur-[100px] pointer-events-none"></div>
 
-      <div class="flex-1 lg:text-left">
-        <div class="mt-4 lg:mt-0 mb-10">
+    <div class="w-full max-w-5xl px-6 py-12 flex flex-col lg:flex-row lg:items-center justify-between gap-12 lg:gap-16 z-10 min-h-screen lg:min-h-0">
+
+      <div class="flex-1 flex flex-col items-start justify-between lg:justify-center h-full">
+        <div class="mb-8 lg:mb-12">
           <button
               @click="router.push('/')"
-              class="group text-[#00cba9] flex items-center gap-2 font-black text-[10px] uppercase tracking-[0.2em] hover:brightness-125 transition-all"
+              class="group text-[#00A896] flex items-center gap-2 font-medium text-[11px] uppercase tracking-[0.2em] transition-all"
           >
-            <span class="text-lg transition-transform group-hover:-translate-x-1">←</span> Retour
+            <span class="text-sm transition-transform group-hover:-translate-x-1">←</span> Retour
           </button>
         </div>
 
-        <div class="mb-10 lg:mb-0">
-          <h2 class="text-4xl lg:text-6xl font-black text-white uppercase tracking-tighter leading-tight">
+        <div class="max-w-sm">
+          <h2 class="text-4xl lg:text-6xl font-light tracking-tight text-[#1E2E2A] leading-tight mb-4">
             Bon retour <br/>
-            <span class="text-[#ff7e5f]">parmi nous</span>
+            <span class="font-medium text-[#FF6B6B]">parmi nous</span>
           </h2>
-          <p class="text-teal-100/50 text-sm lg:text-lg mt-4 max-w-[280px] lg:max-w-none">
-            Connecte-toi pour retrouver tes spots favoris et tes itinéraires.
+          <p class="text-sm text-[#5C756E] leading-relaxed">
+            Connecte-toi pour retrouver tes spots favoris, ta streetfood préférée et tes coups de coeur de voyage.
           </p>
         </div>
       </div>
 
-      <div class="flex-1 w-full max-w-md mx-auto lg:mx-0">
-        <form @submit.prevent="login" class="flex flex-col gap-5 bg-[#112220]/30 lg:bg-[#112220]/50 p-1 lg:p-8 rounded-[2rem] border border-white/5 lg:backdrop-blur-sm">
+      <div class="flex-1 w-full max-w-sm mx-auto lg:mx-0">
+        <form @submit.prevent="login" class="flex flex-col gap-8 bg-white border border-[#E4ECE9] p-8 lg:p-10 rounded-[2rem] shadow-sm">
 
-          <div class="space-y-2">
-            <label class="text-[10px] uppercase tracking-[0.3em] text-teal-500 font-black ml-1">Pseudo</label>
+          <div class="relative border-b border-[#E4ECE9] focus-within:border-[#00A896] transition-colors pb-1">
+            <label class="block text-[10px] uppercase tracking-[0.2em] text-[#5C756E] font-semibold mb-1">Pseudo</label>
             <input
                 v-model="username"
                 type="text"
                 placeholder="johndoe123"
-                class="w-full h-16 bg-[#112220] border border-[#1a3532] rounded-2xl px-5 text-white focus:border-[#ff7e5f] focus:ring-1 focus:ring-[#ff7e5f]/20 outline-none transition-all placeholder:text-teal-900/50"
+                class="w-full bg-transparent text-sm text-[#1E2E2A] outline-none placeholder:text-[#1E2E2A]/20 h-9"
             />
           </div>
 
-          <div class="space-y-2">
-            <label class="text-[10px] uppercase tracking-[0.3em] text-teal-500 font-black ml-1">Mot de passe</label>
+          <div class="relative border-b border-[#E4ECE9] focus-within:border-[#00A896] transition-colors pb-1">
+            <label class="block text-[10px] uppercase tracking-[0.2em] text-[#5C756E] font-semibold mb-1">Mot de passe</label>
             <input
                 v-model="password"
                 type="password"
                 placeholder="••••••••"
-                class="w-full h-16 bg-[#112220] border border-[#1a3532] rounded-2xl px-5 text-white focus:border-[#ff7e5f] focus:ring-1 focus:ring-[#ff7e5f]/20 outline-none transition-all placeholder:text-teal-900/50"
+                class="w-full bg-transparent text-sm text-[#1E2E2A] outline-none placeholder:text-[#1E2E2A]/20 h-9"
             />
           </div>
 
           <transition name="fade">
-            <p v-if="error" class="text-[#ff7e5f] text-xs font-bold text-center bg-[#ff7e5f]/10 py-4 rounded-xl border border-[#ff7e5f]/20">
+            <p v-if="error" class="text-[#FF6B6B] text-xs font-medium text-center bg-[#FF6B6B]/5 py-3 rounded-xl border border-[#FF6B6B]/10">
               {{ error }}
             </p>
           </transition>
 
-          <div class="pt-4 space-y-6">
+          <div class="pt-2 flex flex-col gap-6">
             <button
                 type="submit"
                 :disabled="loading"
-                class="w-full h-16 bg-gradient-to-r from-[#ff7e5f] to-[#feb47b] text-[#0d161c] font-black rounded-2xl shadow-lg shadow-[#ff7e5f]/10 active:scale-[0.98] hover:brightness-110 transition-all uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+                class="w-full h-14 bg-[#00A896] text-white font-medium text-sm tracking-wide rounded-xl active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm flex items-center justify-center"
             >
-              <span v-if="!loading">C'est parti !</span>
-              <span v-else class="flex items-center justify-center gap-2">
-                <svg class="animate-spin h-5 w-5 text-[#0d161c]" viewBox="0 0 24 24">
+              <span v-if="!loading">Se connecter</span>
+              <span v-else class="flex items-center gap-2">
+                <svg class="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
@@ -102,9 +105,9 @@ const login = async () => {
               </span>
             </button>
 
-            <p @click="router.push('/register')" class="text-center text-xs text-teal-500/70 cursor-pointer group">
+            <p @click="router.push('/register')" class="text-center text-xs text-[#5C756E] cursor-pointer group">
               Pas encore de compte ?
-              <span class="text-[#00cba9] font-black group-hover:underline transition-all underline-offset-4">Inscris-toi</span>
+              <span class="text-[#00A896] font-medium group-hover:underline underline-offset-4 transition-all">Inscris-toi</span>
             </p>
           </div>
         </form>
@@ -116,9 +119,10 @@ const login = async () => {
 
 <style scoped>
 .fade-enter-active, .fade-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity 0.2s ease;
 }
 .fade-enter-from, .fade-leave-to {
   opacity: 0;
 }
 </style>
+
