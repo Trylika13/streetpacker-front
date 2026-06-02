@@ -211,7 +211,7 @@ const filteredSpots = computed(() => {
 });
 
 onMounted(() => {
-  config.apiKey = '4FOCYl0j1EWf7D5remSs';
+  config.apiKey = import.meta.env.VITE_MAPTILER_KEY;
 
   if (mapContainer.value) {
     map.value = new Map({
