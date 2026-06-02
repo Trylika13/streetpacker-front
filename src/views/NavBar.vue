@@ -15,7 +15,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
         </svg>
-        <span class="text-[9px] font-medium mt-1 uppercase tracking-wider">Shop</span>
+        <span class="text-[9px] font-medium mt-1 uppercase tracking-wider">MarketPlace</span>
       </router-link>
 
       <!-- BOUTON CENTRAL : AJOUTER UN SPOT -->
