@@ -1,9 +1,9 @@
 <template>
   <!--
     Sur mobile : fixed bottom-0 left-0 right-0 h-16 w-full border-t
-    Sur laptop (lg:) : bottom-4 left-1/2 -translate-x-1/2 max-w-md rounded-2xl border
+    Sur laptop (lg:) : On surélève légèrement le dock pour un effet premium, on ajuste la largeur pour qu'il ne soit pas trop écrasé, et on harmonise l'ombre.
   -->
-  <nav class="fixed bottom-0 lg:bottom-4 left-0 lg:left-1/2 right-0 lg:right-auto lg:-translate-x-1/2 h-16 w-full lg:w-[450px] bg-white/80 backdrop-blur-md border-t lg:border border-[#E4ECE9] lg:rounded-2xl z-[2000] px-6 shadow-sm">
+  <nav class="fixed bottom-0 lg:bottom-6 left-0 lg:left-1/2 right-0 lg:right-auto lg:-translate-x-1/2 h-16 w-full lg:w-[420px] bg-white/80 backdrop-blur-md border-t lg:border border-[#E4ECE9] lg:rounded-2xl z-[2000] px-6 shadow-sm lg:shadow-[0_10px_30px_rgba(9,17,14,0.06)]">
     <div class="flex justify-between items-center h-full max-w-md mx-auto relative">
 
       <!-- SHOP / MARKETPLACE -->
@@ -19,12 +19,15 @@
       </router-link>
 
       <!-- BOUTON CENTRAL : AJOUTER UN SPOT -->
+      <!--
+        Optimisation Laptop : Sur mobile, la bordure est blanche/sable pour couper l'écran.
+        Sur PC, la barre flotte. On remplace donc la bordure opaque par une bordure blanche pure ou transparente (lg:border-white) pour éviter l'effet "troué".
+      -->
       <div class="relative -top-4">
         <button
             @click="$emit('add-spot')"
-            class="bg-[#00A896] p-3.5 rounded-full shadow-md shadow-[#00A896]/20 active:scale-90 transition-transform text-white border-4 border-[#F4F7F5]"
+            class="bg-[#00A896] p-3.5 rounded-full shadow-md shadow-[#00A896]/20 active:scale-90 transition-transform text-white border-4 border-[#F4F7F5] lg:border-white"
         >
-          <!-- Remplace /xl par /svg juste ici -->
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
