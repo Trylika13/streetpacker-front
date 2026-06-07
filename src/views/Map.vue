@@ -3,7 +3,8 @@
     <div ref="mapContainer" class="w-full h-full"></div>
 
     <!-- TOOLBAR FLOTTANTE ÉPURÉE (Recherche uniquement) -->
-    <div class="absolute top-4 left-0 right-0 z-[1000] px-4 max-w-md mx-auto pointer-events-none">
+    <!-- Optimisation Laptop : Positionnée proprement en haut à gauche sur ordi, sans flotter au milieu -->
+    <div class="absolute top-4 left-0 right-0 lg:left-6 lg:right-auto lg:mx-0 z-[1000] px-4 w-full max-w-md mx-auto pointer-events-none">
       <!-- Barre de recherche contextuelle -->
       <div class="w-full h-12 bg-white/90 backdrop-blur-md border border-[#E4ECE9] rounded-2xl px-4 flex items-center gap-3 shadow-sm pointer-events-auto">
         <span class="text-[#5C756E]/40 text-sm">🔍</span>
@@ -18,19 +19,22 @@
     </div>
 
     <!-- VOLET 1 : DÉTAILS D'UN SPOT SÉLECTIONNÉ -->
+    <!-- Optimisation Laptop : Animation adaptative (glisse par la gauche sur ordi, par le bas sur mobile) -->
     <transition
         enter-active-class="transform transition ease-out duration-300"
-        enter-from-class="translate-y-full"
-        enter-to-class="translate-y-0"
+        :enter-from-class="isLaptop ? '-translate-x-full' : 'translate-y-full'"
+        :enter-to-class="isLaptop ? 'translate-x-0' : 'translate-y-0'"
         leave-active-class="transform transition ease-in duration-200"
-        leave-from-class="translate-y-0"
-        leave-to-class="translate-y-full"
+        :leave-from-class="isLaptop ? 'translate-x-0' : 'translate-y-0'"
+        :leave-to-class="isLaptop ? '-translate-x-full' : 'translate-y-full'"
     >
+      <!-- Optimisation Laptop : Devient un panneau latéral gauche fixe sur toute la hauteur (lg:top-0 lg:h-full lg:rounded-r-[2.5rem]) -->
       <div
           v-if="selectedSpot"
-          class="absolute bottom-0 left-0 right-0 z-[1000] bg-white border-t border-[#E4ECE9] text-[#1E2E2A] rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(9,17,14,0.08)] p-6 pb-8 max-w-md mx-auto overflow-y-auto max-h-[60vh] no-scrollbar"
+          class="absolute bottom-0 left-0 right-0 lg:top-0 lg:bottom-auto lg:right-auto z-[1000] bg-white border-t lg:border-t-0 lg:border-r border-[#E4ECE9] text-[#1E2E2A] rounded-t-[2.5rem] lg:rounded-t-none lg:rounded-r-[2.5rem] shadow-[0_-10px_40px_rgba(9,17,14,0.08)] lg:shadow-[10px_0_40px_rgba(9,17,14,0.05)] p-6 pb-8 lg:pt-24 w-full max-w-md mx-auto overflow-y-auto max-h-[60vh] lg:max-h-full lg:h-full no-scrollbar"
       >
-        <div class="w-12 h-1 bg-[#E4ECE9] rounded-full mx-auto mb-5"></div>
+        <!-- Masqué sur Laptop -->
+        <div class="w-12 h-1 bg-[#E4ECE9] rounded-full mx-auto mb-5 lg:hidden"></div>
 
         <div class="flex justify-between items-start mb-4">
           <div>
@@ -56,7 +60,8 @@
           {{ selectedSpot.description || selectedSpot.Description || 'Aucune description disponible pour ce lieu.' }}
         </p>
 
-        <div v-if="selectedSpot.imageUrl || selectedSpot.ImageUrl" class="w-full h-44 rounded-2xl overflow-hidden mb-6 border border-[#E4ECE9]">
+        <!-- Optimisation Laptop : Hauteur d'image légèrement augmentée sur grand écran pour plus de confort visuel -->
+        <div v-if="selectedSpot.imageUrl || selectedSpot.ImageUrl" class="w-full h-44 lg:h-56 rounded-2xl overflow-hidden mb-6 border border-[#E4ECE9]">
           <img :src="selectedSpot.imageUrl || selectedSpot.ImageUrl" class="w-full h-full object-cover" />
         </div>
 
@@ -80,19 +85,21 @@
     </transition>
 
     <!-- VOLET 2 : FORMULAIRE D'AJOUT D'UN NOUVEAU SPOT -->
+    <!-- Optimisation Laptop : Même comportement latéral ultra-pro (Google Maps style) -->
     <transition
         enter-active-class="transform transition ease-out duration-300"
-        enter-from-class="translate-y-full"
-        enter-to-class="translate-y-0"
+        :enter-from-class="isLaptop ? '-translate-x-full' : 'translate-y-full'"
+        :enter-to-class="isLaptop ? 'translate-x-0' : 'translate-y-0'"
         leave-active-class="transform transition ease-in duration-200"
-        leave-from-class="translate-y-0"
-        leave-to-class="translate-y-full"
+        :leave-from-class="isLaptop ? 'translate-x-0' : 'translate-y-0'"
+        :leave-to-class="isLaptop ? '-translate-x-full' : 'translate-y-full'"
     >
       <div
           v-if="newSpotCoords"
-          class="absolute bottom-0 left-0 right-0 z-[1000] bg-white border-t border-[#E4ECE9] text-[#1E2E2A] rounded-t-[2.5rem] p-6 pb-8 shadow-[0_-10px_40px_rgba(9,17,14,0.08)] max-w-md mx-auto overflow-y-auto max-h-[75vh] no-scrollbar"
+          class="absolute bottom-0 left-0 right-0 lg:top-0 lg:bottom-auto lg:right-auto z-[1000] bg-white border-t lg:border-t-0 lg:border-r border-[#E4ECE9] text-[#1E2E2A] rounded-t-[2.5rem] lg:rounded-t-none lg:rounded-r-[2.5rem] p-6 pb-8 lg:pt-24 shadow-[0_-10px_40px_rgba(9,17,14,0.08)] lg:shadow-[10px_0_40px_rgba(9,17,14,0.05)] w-full max-w-md mx-auto overflow-y-auto max-h-[75vh] lg:max-h-full lg:h-full no-scrollbar"
       >
-        <div class="w-12 h-1 bg-[#E4ECE9] rounded-full mx-auto mb-5"></div>
+        <!-- Masqué sur Laptop -->
+        <div class="w-12 h-1 bg-[#E4ECE9] rounded-full mx-auto mb-5 lg:hidden"></div>
 
         <div class="flex justify-between items-start mb-4">
           <div>
@@ -109,7 +116,7 @@
           <div class="space-y-1">
             <div
                 @click="triggerSpotImageUpload"
-                class="w-full h-28 bg-[#F4F7F5] border border-dashed border-[#E4ECE9] rounded-xl flex items-center justify-center overflow-hidden cursor-pointer hover:border-[#00A896] transition-colors relative"
+                class="w-full h-28 lg:h-36 bg-[#F4F7F5] border border-dashed border-[#E4ECE9] rounded-xl flex items-center justify-center overflow-hidden cursor-pointer hover:border-[#00A896] transition-colors relative"
             >
               <img v-if="newSpotImageUrl" :src="newSpotImageUrl" class="w-full h-full object-cover" />
               <div v-else class="flex flex-col items-center text-[#5C756E]/40">
@@ -189,6 +196,9 @@ const map = shallowRef(null);
 const markers = ref([]);
 const selectedSpot = ref(null);
 
+// Détection dynamique de la taille d'écran pour adapter les volets
+const isLaptop = ref(false);
+
 // Filtrage State
 const searchQuery = ref('');
 
@@ -199,6 +209,11 @@ const isSubmitting = ref(false)
 const newSpotImageUrl = ref('')
 const isUploadingSpotImage = ref(false)
 const spotImageInput = ref(null);
+
+// Fonction de détection du breakpoint ordinateur (lg = 1024px)
+const checkScreenSize = () => {
+  isLaptop.value = window.innerWidth >= 1024;
+};
 
 // FILTRAGE UNIQUEMENT PAR TITRE
 const filteredSpots = computed(() => {
@@ -212,6 +227,10 @@ const filteredSpots = computed(() => {
 
 onMounted(() => {
   config.apiKey = import.meta.env.VITE_MAPTILER_KEY;
+
+  // Écouteur de redimensionnement
+  checkScreenSize();
+  window.addEventListener('resize', checkScreenSize);
 
   if (mapContainer.value) {
     map.value = new Map({
@@ -289,10 +308,11 @@ const displaySpots = () => {
 
         selectedSpot.value = spot;
 
+        // Optimisation Laptop : Sur grand écran, on centre le zoom normalement sans le décaler vers le bas (padding optionnel sur mobile uniquement)
         map.value.flyTo({
           center: [lng, lat],
           zoom: 15,
-          padding: { bottom: 250 },
+          padding: isLaptop.value ? { left: 100 } : { bottom: 250 },
           essential: true
         });
       });
@@ -366,6 +386,7 @@ const copyCoords = async (lat, lng) => {
 };
 
 onUnmounted(() => {
+  window.removeEventListener('resize', checkScreenSize);
   if (map.value) map.value.remove();
 });
 </script>
@@ -376,8 +397,19 @@ onUnmounted(() => {
   display: none !important;
 }
 
+/* Sur mobile : On garde ta marge de 70px pour qu'il soit sous ta barre.
+  Sur laptop (lg) : La barre de recherche fait 48px de haut (h-12) et est à 16px du haut (top-4).
+  On passe la marge du bouton à 16px pour l'aligner pile-poil sur la même ligne horizontale !
+*/
 :deep(.maplibregl-ctrl-top-right) {
   margin-top: 70px !important;
+}
+
+@media (min-width: 1024px) {
+  :deep(.maplibregl-ctrl-top-right) {
+    margin-top: 16px !important;
+    margin-right: 24px !important; /* Petit décalage propre par rapport au bord droit de l'écran */
+  }
 }
 
 .no-scrollbar::-webkit-scrollbar {
