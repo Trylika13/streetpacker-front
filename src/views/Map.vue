@@ -1,11 +1,13 @@
 <template>
-  <div class="relative w-full h-[calc(100vh-64px)] lg:h-screen overflow-hidden bg-[#F4F7F5] font-sans selection:bg-[#00A896]/20">    <!-- CONTENEUR DE LA CARTE MAPTILER -->
-    <div ref="mapContainer" class="w-full h-full"></div>
+  <!-- h-full prend désormais le 100dvh du parent, la carte occupe TOUT l'espace -->
+  <div class="relative w-full h-full overflow-hidden bg-[#F4F7F5] font-sans selection:bg-[#00A896]/20">
+
+    <!-- CONTENEUR DE LA CARTE MAPTILER -->
+    <div ref="mapContainer" class="w-full h-full absolute inset-0 z-0"></div>
 
     <!-- TOOLBAR FLOTTANTE ÉPURÉE (Recherche uniquement) -->
-    <!-- Optimisation Laptop : Positionnée proprement en haut à gauche sur ordi, sans flotter au milieu -->
-    <div class="absolute top-4 left-0 right-0 lg:left-6 lg:right-auto lg:mx-0 z-[1000] px-4 w-full max-w-md mx-auto pointer-events-none">
-      <!-- Barre de recherche contextuelle -->
+    <!-- pt-[calc(16px+env(safe-area-inset-top))] : gère dynamiquement l'encoche/notch du haut sur iPhone -->
+    <div class="absolute top-[calc(12px+env(safe-area-inset-top))] left-0 right-0 lg:top-4 lg:left-6 lg:right-auto lg:mx-0 z-[1000] px-4 w-full max-w-md mx-auto pointer-events-none">
       <div class="w-full h-12 bg-white/90 backdrop-blur-md border border-[#E4ECE9] rounded-2xl px-4 flex items-center gap-3 shadow-sm pointer-events-auto">
         <span class="text-[#5C756E]/40 text-sm">🔍</span>
         <input
@@ -397,18 +399,15 @@ onUnmounted(() => {
   display: none !important;
 }
 
-/* Sur mobile : On garde ta marge de 70px pour qu'il soit sous ta barre.
-  Sur laptop (lg) : La barre de recherche fait 48px de haut (h-12) et est à 16px du haut (top-4).
-  On passe la marge du bouton à 16px pour l'aligner pile-poil sur la même ligne horizontale !
-*/
+/* Aligne le bouton GPS sous le notch de l'iPhone proprement */
 :deep(.maplibregl-ctrl-top-right) {
-  margin-top: 70px !important;
+  margin-top: calc(75px + env(safe-area-inset-top)) !important;
 }
 
 @media (min-width: 1024px) {
   :deep(.maplibregl-ctrl-top-right) {
     margin-top: 16px !important;
-    margin-right: 24px !important; /* Petit décalage propre par rapport au bord droit de l'écran */
+    margin-right: 24px !important;
   }
 }
 
