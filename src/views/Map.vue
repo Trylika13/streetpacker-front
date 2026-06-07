@@ -33,7 +33,7 @@
       <!-- Optimisation Laptop : Devient un panneau latéral gauche fixe sur toute la hauteur (lg:top-0 lg:h-full lg:rounded-r-[2.5rem]) -->
       <div
           v-if="selectedSpot"
-          class="absolute bottom-0 left-0 right-0 lg:top-0 lg:bottom-auto lg:right-auto z-[1000] bg-white border-t lg:border-t-0 lg:border-r border-[#E4ECE9] text-[#1E2E2A] rounded-t-[2.5rem] lg:rounded-t-none lg:rounded-r-[2.5rem] shadow-[0_-10px_40px_rgba(9,17,14,0.08)] lg:shadow-[10px_0_40px_rgba(9,17,14,0.05)] p-6 pb-8 lg:pt-24 w-full max-w-md mx-auto overflow-y-auto max-h-[60vh] lg:max-h-full lg:h-full no-scrollbar"
+          class="absolute bottom-0 left-0 right-0 lg:top-0 lg:bottom-auto lg:right-auto z-[3000] bg-white border-t lg:border-t-0 lg:border-r border-[#E4ECE9] text-[#1E2E2A] rounded-t-[2.5rem] lg:rounded-t-none lg:rounded-r-[2.5rem] shadow-[0_-10px_40px_rgba(9,17,14,0.08)] lg:shadow-[10px_0_40px_rgba(9,17,14,0.05)] p-6 pb-8 lg:pt-24 w-full max-w-md mx-auto overflow-y-auto max-h-[60vh] lg:max-h-full lg:h-full no-scrollbar"
       >
         <!-- Masqué sur Laptop -->
         <div class="w-12 h-1 bg-[#E4ECE9] rounded-full mx-auto mb-5 lg:hidden"></div>
@@ -98,7 +98,7 @@
     >
       <div
           v-if="newSpotCoords"
-          class="absolute bottom-0 left-0 right-0 lg:top-0 lg:bottom-auto lg:right-auto z-[1000] bg-white border-t lg:border-t-0 lg:border-r border-[#E4ECE9] text-[#1E2E2A] rounded-t-[2.5rem] lg:rounded-t-none lg:rounded-r-[2.5rem] p-6 pb-8 lg:pt-24 shadow-[0_-10px_40px_rgba(9,17,14,0.08)] lg:shadow-[10px_0_40px_rgba(9,17,14,0.05)] w-full max-w-md mx-auto overflow-y-auto max-h-[75vh] lg:max-h-full lg:h-full no-scrollbar"
+          class="absolute bottom-0 left-0 right-0 lg:top-0 lg:bottom-auto lg:right-auto z-[3000] bg-white border-t lg:border-t-0 lg:border-r border-[#E4ECE9] text-[#1E2E2A] rounded-t-[2.5rem] lg:rounded-t-none lg:rounded-r-[2.5rem] p-6 pb-8 lg:pt-24 shadow-[0_-10px_40px_rgba(9,17,14,0.08)] lg:shadow-[10px_0_40px_rgba(9,17,14,0.05)] w-full max-w-md mx-auto overflow-y-auto max-h-[75vh] lg:max-h-full lg:h-full no-scrollbar"
       >
         <!-- Masqué sur Laptop -->
         <div class="w-12 h-1 bg-[#E4ECE9] rounded-full mx-auto mb-5 lg:hidden"></div>
