@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
     headers: {
@@ -14,9 +13,7 @@ api.interceptors.request.use((config) => {
         config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
-},(error) => Promise.reject(error));
-
-
+}, (error) => Promise.reject(error));
 
 api.interceptors.response.use(
     (response) => response,
@@ -34,9 +31,13 @@ api.interceptors.response.use(
             }
 
             try {
-                const { data } = await api.post('/auth/refresh', {
+                //  SOLUTION : On utilise l'instance axios globale brute
+                // pour bypasser complètement l'intercepteur et casser la boucle infinie
+                const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/auth/refresh`, {
                     token,
                     refreshToken
+                }, {
+                    headers: { 'Content-Type': 'application/json' }
                 });
 
                 localStorage.setItem('token', data.accessToken);
@@ -46,6 +47,7 @@ api.interceptors.response.use(
                 return api(originalRequest);
 
             } catch (refreshError) {
+                // Si le refresh échoue, on nettoie tout proprement
                 localStorage.clear();
                 window.location.href = '/login';
                 return Promise.reject(refreshError);
