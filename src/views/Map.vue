@@ -179,7 +179,7 @@
 </template>
 
 <script setup>
-import { ref, shallowRef, onMounted, onUnmounted, watch, computed } from 'vue';
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import { config, GeolocateControl, Map, MapStyle, Marker } from '@maptiler/sdk';
 import api from '@/api/axios'
 import { compressImage, uploadImage } from '@/api/mediaService';
@@ -194,17 +194,15 @@ const props = defineProps({
 const emit = defineEmits(['coords-captured', 'close-form', 'spot-created']);
 
 const mapContainer = ref(null);
-const map = shallowRef(null);
-const markers = ref([]);
+
+// 🛠️ FIX 1 : Variables strictement locales pour couper TOUTE réactivité de Vue sur les gros objets
+let mapInstance = null;
+let mapMarkers = [];
+
 const selectedSpot = ref(null);
-
-// Détection dynamique de la taille d'écran pour adapter les volets
 const isLaptop = ref(false);
-
-// Filtrage State
 const searchQuery = ref('');
 
-// Formulaire states
 const newSpotTitle = ref('');
 const newSpotDescription = ref('');
 const isSubmitting = ref(false)
@@ -212,17 +210,15 @@ const newSpotImageUrl = ref('')
 const isUploadingSpotImage = ref(false)
 const spotImageInput = ref(null);
 
-// Fonction de détection du breakpoint ordinateur (lg = 1024px)
+// 🛠️ FIX 3 : Utilisation d'une fonction fléchée stable pour le resize
 const checkScreenSize = () => {
   isLaptop.value = window.innerWidth >= 1024;
 };
 
-// FILTRAGE UNIQUEMENT PAR TITRE
 const filteredSpots = computed(() => {
   return props.spots.filter(spot => {
     const title = (spot.title || spot.Title || '').toLowerCase();
     const query = searchQuery.value.toLowerCase();
-
     return title.includes(query);
   });
 });
@@ -230,12 +226,12 @@ const filteredSpots = computed(() => {
 onMounted(() => {
   config.apiKey = import.meta.env.VITE_MAPTILER_KEY;
 
-  // Écouteur de redimensionnement
   checkScreenSize();
   window.addEventListener('resize', checkScreenSize);
 
   if (mapContainer.value) {
-    map.value = new Map({
+    // 🛠️ FIX 1 Suite : On stocke dans la variable brute locale
+    mapInstance = new Map({
       container: mapContainer.value,
       style: MapStyle.OPENSTREETMAP,
       center: [5.694040, 50.679083],
@@ -249,15 +245,15 @@ onMounted(() => {
       trackUserLocation: true,
       showUserLocation: true
     });
-    map.value.addControl(geolocate);
+    mapInstance.addControl(geolocate);
 
-    map.value.on('load', () => {
+    mapInstance.on('load', () => {
       if (filteredSpots.value.length > 0) {
         displaySpots();
       }
       geolocate.trigger();
 
-      map.value.on('click', (e) => {
+      mapInstance.on('click', (e) => {
         if (props.isAddingMode) {
           const { lat, lng } = e.lngLat;
           selectedSpot.value = null;
@@ -270,10 +266,9 @@ onMounted(() => {
   }
 });
 
-// Redessine dès que la recherche filtre le tableau par titre
 watch(filteredSpots, () => {
   displaySpots();
-}, { deep: true });
+});
 
 watch(() => props.isAddingMode, (newVal) => {
   if (mapContainer.value) {
@@ -290,10 +285,11 @@ watch(() => props.newSpotCoords, (newVal) => {
 });
 
 const displaySpots = () => {
-  if (!map.value) return;
+  if (!mapInstance) return;
 
-  markers.value.forEach(m => m.remove());
-  markers.value = [];
+  // 🛠️ FIX 2 : Nettoyage propre de l'ancien tableau local
+  mapMarkers.forEach(m => m.remove());
+  mapMarkers = [];
 
   filteredSpots.value.forEach(spot => {
     const lng = spot.longitude;
@@ -302,7 +298,7 @@ const displaySpots = () => {
     if (lng && lat) {
       const marker = new Marker({ color: "#00A896" })
           .setLngLat([lng, lat])
-          .addTo(map.value);
+          .addTo(mapInstance);
 
       marker.getElement().addEventListener('click', (e) => {
         e.stopPropagation();
@@ -310,8 +306,7 @@ const displaySpots = () => {
 
         selectedSpot.value = spot;
 
-        // Optimisation Laptop : Sur grand écran, on centre le zoom normalement sans le décaler vers le bas (padding optionnel sur mobile uniquement)
-        map.value.flyTo({
+        mapInstance.flyTo({
           center: [lng, lat],
           zoom: 15,
           padding: isLaptop.value ? { left: 100 } : { bottom: 250 },
@@ -319,7 +314,7 @@ const displaySpots = () => {
         });
       });
 
-      markers.value.push(marker);
+      mapMarkers.push(marker);
     }
   });
 };
@@ -369,27 +364,29 @@ const isCopied = ref(false);
 
 const copyCoords = async (lat, lng) => {
   if (!lat || !lng) return;
-
   try {
     const coordsString = `${lat},${lng}`;
     await navigator.clipboard.writeText(coordsString);
-
-    // On passe à true pour changer le look du bouton
     isCopied.value = true;
-
-    // Au bout de 2 secondes, le bouton redevient normal
-    setTimeout(() => {
-      isCopied.value = false;
-    }, 2000);
-
+    setTimeout(() => { isCopied.value = false; }, 2000);
   } catch (err) {
     console.error("Impossible de copier :", err);
   }
 };
 
+// 🛠️ NETTOYAGE COMPLET LORS DU UNMOUNT
 onUnmounted(() => {
   window.removeEventListener('resize', checkScreenSize);
-  if (map.value) map.value.remove();
+
+  if (mapMarkers) {
+    mapMarkers.forEach(m => m.remove());
+    mapMarkers = [];
+  }
+
+  if (mapInstance) {
+    mapInstance.remove();
+    mapInstance = null;
+  }
 });
 </script>
 

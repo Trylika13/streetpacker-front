@@ -1,11 +1,10 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, shallowRef, onMounted } from 'vue';
 import api from '@/api/axios';
 import Map from "@/views/Map.vue";
 import NavBar from "@/views/NavBar.vue";
 
-const spots = ref([]);
-
+const spots = shallowRef([]);
 // Ajouter les états pour la gestion de l'ajout d'un spot
 const isAddingMode = ref(false);
 const newSpotCoords = ref(null);
