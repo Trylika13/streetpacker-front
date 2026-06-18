@@ -22,7 +22,7 @@ const fetchAdsAndFavorites = async () => {
     // On lance les deux requêtes en même temps
     const [adsResponse, favsResponse] = await Promise.all([
       api.get('/Ads'),
-      api.get('/ads/favorites').catch(() => ({ data: [] })) // Fallback si pas connecté ou erreur
+      api.get('/Ads/favorites').catch(() => ({ data: [] })) // Fallback si pas connecté ou erreur
     ])
 
     // Stocker les IDs des favoris dans un Set pour une recherche ultra-rapide (O(1))
@@ -48,7 +48,7 @@ const fetchAdsAndFavorites = async () => {
 const toggleFavoriteAd = async (ad) => {
   try {
     // Appel direct à ton endpoint POST [HttpPost("{id}/favorite")]
-    const res = await api.post(`/ads/${ad.adId}/favorite`)
+    const res = await api.post(`/Ads/${ad.adId}/favorite`)
 
     // Mise à jour de l'état réactif grâce au retour du tuple de ton backend
     ad.isFavorite = res.data.isFavorite

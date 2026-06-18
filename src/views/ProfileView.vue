@@ -185,8 +185,8 @@ const fetchProfileStats = async () => {
   // 2. Charger les compteurs de favoris via tes nouveaux endpoints dédiés
   try {
     const [favSpotsRes, favAdsRes] = await Promise.all([
-      api.get('/spots/favorites'),
-      api.get('/ads/favorites')
+      api.get('/Spots/favorites'),
+      api.get('/Ads/favorites')
     ])
     stats.value.favSpots = favSpotsRes.data?.length || 0
     stats.value.favAds = favAdsRes.data?.length || 0
@@ -196,7 +196,7 @@ const fetchProfileStats = async () => {
 
   // 3. Charger les spots créés par l'utilisateur
   try {
-    const spotsRes = await api.get('/spots/my-spots')
+    const spotsRes = await api.get('/Spots/my-spots')
     stats.value.spots = spotsRes.data?.length || 0
   } catch (err) {
     console.error('Erreur chargement mes spots:', err)
@@ -205,7 +205,7 @@ const fetchProfileStats = async () => {
 
   // 4. Charger les annonces créées par l'utilisateur
   try {
-    const adsRes = await api.get('/ads/my-ads') // URL passée en minuscules
+    const adsRes = await api.get('/Ads/my-ads') // URL passée en minuscules
     stats.value.ads = adsRes.data?.length || 0
   } catch (err) {
     console.error('Erreur chargement mes annonces:', err)
