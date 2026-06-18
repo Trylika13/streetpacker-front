@@ -9,19 +9,47 @@ const spots = shallowRef([]);
 const isAddingMode = ref(false);
 const newSpotCoords = ref(null);
 
+// Charger les spots ET les favoris en parallèle
+// Charger les spots ET les favoris en parallèle
 const fetchSpots = async () => {
   try {
-    const response = await api.get('/spots');
-    spots.value = response.data;
-    console.log("Spots récupérés de la DB :", spots.value);
+    // 🛠️ Ligne 'loading.value = true' SUPPRIMÉE ici !
+
+    const [spotsResponse, favoritesResponse] = await Promise.all([
+      api.get('/spots'),
+      api.get('/spots/favorites').catch(() => ({ data: [] }))
+    ]);
+
+    // ... le reste de ta fonction fetchSpots reste identique
+
+    // 🛠️ On crée un Set avec les IDs de tes spots favoris (gestion du fallback spotsId ou id)
+    const favoriteSpotIds = new Set(
+        favoritesResponse.data?.map(fav => fav.spotsId || fav.id) || []
+    );
+
+    // 🛠️ On injecte la propriété 'isFavorite' directement dans chaque spot
+    if (spotsResponse.data && Array.isArray(spotsResponse.data)) {
+      spots.value = spotsResponse.data.map(spot => {
+        const id = spot.spotsId || spot.id;
+        return {
+          ...spot,
+          spotsId: id, // Sécurité pour s'assurer que spotsId est toujours défini
+          isFavorite: favoriteSpotIds.has(id)
+        };
+      });
+    }
+
+    console.log("Spots avec état favori prêts pour la Map :", spots.value);
   } catch (error) {
     console.error("Erreur lors de la récup des spots :", error);
     spots.value = [{
       id: 0,
+      spotsId: 0,
       title: "Erreur API - Mode Local",
       latitude: 50.679083,
       longitude: 5.694040,
-      description: "Impossible de joindre le serveur C#"
+      description: "Impossible de joindre le serveur C#",
+      isFavorite: false
     }];
   }
 };
@@ -52,7 +80,6 @@ onMounted(() => {
   fetchSpots();
 });
 </script>
-
 <template>
   <!--
     h-[100dvh] : force l'écran à faire exactement la taille de la zone d'affichage mobile sans bouger avec la barre d'adresse du navigateur.

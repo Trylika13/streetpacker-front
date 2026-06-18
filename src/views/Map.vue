@@ -77,9 +77,14 @@
             <span v-else>Copier les coordonnées</span>
           </button>
 
-          <button class="px-4 bg-[#F4F7F5] text-[#5C756E] rounded-xl hover:text-[#FF6B6B] transition-colors border border-[#E4ECE9]">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          <button
+              @click="toggleFavoriteSpot(selectedSpot)"
+              class="px-4 bg-[#F4F7F5] rounded-xl transition-colors border border-[#E4ECE9] flex items-center justify-center active:scale-90"
+              :class="selectedSpot.isFavorite ? 'text-[#FF6B6B]' : 'text-[#5C756E] hover:text-[#FF6B6B]'"
+              :title="selectedSpot.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" :fill="selectedSpot.isFavorite ? 'currentColor' : 'none'" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
           </button>
         </div>
@@ -373,6 +378,22 @@ const copyCoords = async (lat, lng) => {
     console.error("Impossible de copier :", err);
   }
 };
+
+// 🛠️ FONCTION POUR LIKER/UNLIKER LE SPOT DEPUIS LA MAP
+const toggleFavoriteSpot = async (spot) => {
+  try {
+    // On récupère le bon ID (gestion du fallback spotsId ou id)
+    const id = spot.spotsId || spot.id || spot.SpotsId;
+
+    // Appel à ton endpoint POST .NET [HttpPost("{id}/favorite")]
+    const res = await api.post(`/spots/${id}/favorite`)
+
+    // Le tuple .NET renvoie { isFavorite: true/false }, on met à jour la réactivité Vue
+    spot.isFavorite = res.data.isFavorite
+  } catch (err) {
+    console.error("Erreur lors de la modification du spot favori :", err)
+  }
+}
 
 // 🛠️ NETTOYAGE COMPLET LORS DU UNMOUNT
 onUnmounted(() => {

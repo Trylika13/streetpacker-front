@@ -4,13 +4,13 @@ import { useRouter, useRoute } from 'vue-router'
 import api from '../api/axios'
 
 interface FavoriteSpot {
-  id: string | number;
+  spotsId: string; // Aligné sur le DTO .NET / Supabase
   title: string;
   description: string;
 }
 
 interface FavoriteAd {
-  adId: string | number;
+  adId: string; // Aligné sur le DTO .NET
   title: string;
   price: number;
   locationArea: string;
@@ -20,34 +20,32 @@ interface FavoriteAd {
 const router = useRouter()
 const route = useRoute()
 
-// On détecte l'onglet actif grâce à la query string (?tab=ads ou ?tab=spots), par défaut 'spots'
 const activeTab = ref(route.query.tab === 'ads' ? 'ads' : 'spots')
 const loading = ref(true)
 
 const favoriteSpots = ref<FavoriteSpot[]>([])
 const favoriteAds = ref<FavoriteAd[]>([])
 
-// Supprimer un spot des favoris
-const removeSpotFavorite = async (spotId: string | number) => {
+// Supprimer un spot des favoris (Appel de ton Toggle en POST)
+const removeSpotFavorite = async (spotId: string) => {
   try {
-    await api.delete(`/spots/${spotId}/favorite`) // Adapte si ton endpoint .NET est différent
-    favoriteSpots.value = favoriteSpots.value.filter(s => s.id !== spotId)
+    await api.post(`/spots/${spotId}/favorite`) // POST car c'est un Toggle côté .NET
+    favoriteSpots.value = favoriteSpots.value.filter(s => s.spotsId !== spotId)
   } catch (err) {
     console.error('Erreur suppression favori spot:', err)
   }
 }
 
-// Supprimer une annonce des favoris
-const removeAdFavorite = async (adId: string | number) => {
+// Supprimer une annonce des favoris (Appel de ton Toggle en POST)
+const removeAdFavorite = async (adId: string) => {
   try {
-    await api.delete(`/Ads/${adId}/favorite`) // Adapte si ton endpoint .NET est différent
+    await api.post(`/ads/${adId}/favorite`) // Route minuscules pour matcher l'API standard et POST pour le Toggle
     favoriteAds.value = favoriteAds.value.filter(a => a.adId !== adId)
   } catch (err) {
     console.error('Erreur suppression favori annonce:', err)
   }
 }
 
-// Génération du lien WhatsApp ou Mailto selon ce que l'API a stocké
 const generateContactLink = (contact: string, adTitle: string) => {
   if (!contact) return '#'
   const message = `Bonjour, je viens de voir ton annonce pour "${adTitle}" dans mes favoris StreetPacker...`
@@ -64,8 +62,8 @@ const fetchFavorites = async () => {
   try {
     loading.value = true
     const [spotsRes, adsRes] = await Promise.all([
-      api.get('/spots/favorites'), // Adapte tes routes d'API .NET au besoin
-      api.get('/Ads/favorites')
+      api.get('/spots/favorites'),
+      api.get('/ads/favorites') // Route passée en minuscules (plus propre pour l'url)
     ])
     favoriteSpots.value = spotsRes.data || []
     favoriteAds.value = adsRes.data || []
@@ -78,7 +76,6 @@ const fetchFavorites = async () => {
 
 onMounted(fetchFavorites)
 </script>
-
 <template>
   <div class="min-h-screen bg-[#F4F7F5] text-[#1E2E2A] pb-12 font-sans">
 
@@ -120,17 +117,16 @@ onMounted(fetchFavorites)
         <div v-if="activeTab === 'spots'" class="space-y-3 sm:grid sm:grid-cols-2 sm:gap-4 sm:space-y-0">
           <div v-if="favoriteSpots.length === 0" class="text-center py-12 sm:col-span-2 text-[#5C756E]/40 italic text-xs">Aucun spot mis en favori pour l'instant.</div>
 
-          <div v-for="spot in favoriteSpots" :key="spot.id" class="bg-white p-4 rounded-2xl border border-[#E4ECE9] flex items-center justify-between gap-4 shadow-sm hover:border-[#00A896]/20 transition-colors">
+          <div v-for="spot in favoriteSpots" :key="spot.spotsId" class="bg-white p-4 rounded-2xl border border-[#E4ECE9] flex items-center justify-between gap-4 shadow-sm hover:border-[#00A896]/20 transition-colors">
             <div class="min-w-0 flex-1">
               <h4 class="font-medium text-sm text-[#1E2E2A] truncate">{{ spot.title }}</h4>
               <p class="text-xs text-[#5C756E]/70 truncate mt-0.5">{{ spot.description }}</p>
             </div>
-            <button @click="removeSpotFavorite(spot.id)" class="p-2 text-[#FF6B6B] hover:bg-red-50 rounded-full transition-colors" title="Retirer des favoris">
+            <button @click="removeSpotFavorite(spot.spotsId)" class="p-2 text-[#FF6B6B] hover:bg-red-50 rounded-full transition-colors" title="Retirer des favoris">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
             </button>
           </div>
         </div>
-
         <!-- Onglet : Annonces Favorites -->
         <div v-if="activeTab === 'ads'" class="space-y-3 sm:grid sm:grid-cols-2 sm:gap-4 sm:space-y-0">
           <div v-if="favoriteAds.length === 0" class="text-center py-12 sm:col-span-2 text-[#5C756E]/40 italic text-xs">Aucune annonce enregistrée dans tes favoris.</div>
