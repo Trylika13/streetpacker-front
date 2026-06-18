@@ -44,7 +44,7 @@ api.interceptors.response.use(
                 localStorage.setItem('refreshToken', data.refreshToken);
 
                 originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
-                return api(originalRequest);
+                return axios(originalRequest);
 
             } catch (refreshError) {
                 // Si le refresh échoue, on nettoie tout proprement

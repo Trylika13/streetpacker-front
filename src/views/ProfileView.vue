@@ -156,7 +156,9 @@ interface User {
 }
 
 const router = useRouter()
-const user = ref<User>({ username: '', avatarUrl: '' })
+
+// On initialise avec des structures par défaut pour un affichage immédiat
+const user = ref<User>({ username: 'Backpacker', avatarUrl: '' })
 
 const stats = ref({
   spots: 0,
@@ -172,32 +174,45 @@ const logout = () => {
 }
 
 const fetchProfileStats = async () => {
+  // 1. Charger l'utilisateur (Infos de base)
   try {
-    // 🌟 On appelle direct /Ads/my-ads au lieu de /Ads
-    const [userRes, spotsRes, adsRes] = await Promise.all([
-      api.get('/users/me'),
-      api.get('/spots/my-spots'),
-      api.get('/Ads/my-ads')
-    ])
-
+    const userRes = await api.get('/users/me')
     user.value = userRes.data
-
-    stats.value.spots = spotsRes.data?.length || 0
-
-    // Le back ne renvoie plus que TES annonces, donc la taille du tableau est directement ton total !
-    stats.value.ads = adsRes.data?.length || 0
-
-    // Pour tes favoris (ajuste selon ce que ton objet user/me renvoie réellement)
-    stats.value.favSpots = userRes.data?.favoriteSpots?.length || 0
-    stats.value.favAds = userRes.data?.favoriteAds?.length || 0
-
   } catch (err) {
-    console.error('Erreur chargement des compteurs du hub:', err)
+    console.error('Erreur chargement profil utilisateur:', err)
+  }
+
+  // 2. Charger les compteurs de favoris via tes nouveaux endpoints dédiés
+  try {
+    const [favSpotsRes, favAdsRes] = await Promise.all([
+      api.get('/spots/favorites'),
+      api.get('/ads/favorites')
+    ])
+    stats.value.favSpots = favSpotsRes.data?.length || 0
+    stats.value.favAds = favAdsRes.data?.length || 0
+  } catch (err) {
+    console.error('Erreur chargement des compteurs de favoris:', err)
+  }
+
+  // 3. Charger les spots créés par l'utilisateur
+  try {
+    const spotsRes = await api.get('/spots/my-spots')
+    stats.value.spots = spotsRes.data?.length || 0
+  } catch (err) {
+    console.error('Erreur chargement mes spots:', err)
+    stats.value.spots = 0
+  }
+
+  // 4. Charger les annonces créées par l'utilisateur
+  try {
+    const adsRes = await api.get('/ads/my-ads') // URL passée en minuscules
+    stats.value.ads = adsRes.data?.length || 0
+  } catch (err) {
+    console.error('Erreur chargement mes annonces:', err)
+    stats.value.ads = 0
   }
 }
-
 onMounted(fetchProfileStats)
 </script>
-
 <style scoped>
 </style>
