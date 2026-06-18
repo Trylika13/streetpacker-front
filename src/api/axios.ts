@@ -31,9 +31,7 @@ api.interceptors.response.use(
             }
 
             try {
-                //  SOLUTION : On utilise l'instance axios globale brute
-                // pour bypasser complètement l'intercepteur et casser la boucle infinie
-                const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/auth/refresh`, {
+                const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/Auth/refresh`, {
                     token,
                     refreshToken
                 }, {
