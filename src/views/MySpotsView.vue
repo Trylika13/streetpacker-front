@@ -26,7 +26,7 @@ const spotToEdit = ref<Spot>({ id: '', title: '', description: '', imageUrl: '' 
 const fetchMySpots = async () => {
   try {
     loading.value = true
-    const res = await api.get('/spots/my-spots')
+    const res = await api.get('/Spots/my-spots')
     mySpots.value = res.data || []
   } catch (err) {
     console.error('Erreur lors de la récupération de tes spots:', err)
@@ -39,7 +39,7 @@ const deleteSpot = async (id: string | number) => {
   if (!confirm('Sûr de vouloir supprimer ce spot de la carte ? 🌲')) return
 
   try {
-    await api.delete('/spots/' + id)
+    await api.delete('Spots/' + id)
     mySpots.value = mySpots.value.filter(s => s.id !== id)
   } catch (error) {
     console.error('Erreur lors de la suppression du spot:', error)
@@ -86,7 +86,7 @@ const saveSpot = async () => {
       imageUrl: spotToEdit.value.imageUrl || ''
     }
 
-    await api.put('/spots/' + spotToEdit.value.id, payload)
+    await api.put('/Spots/' + spotToEdit.value.id, payload)
 
     const index = mySpots.value.findIndex(s => s.id === spotToEdit.value.id)
     if (index !== -1) {

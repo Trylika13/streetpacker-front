@@ -29,7 +29,7 @@ const favoriteAds = ref<FavoriteAd[]>([])
 // Supprimer un spot des favoris (Appel de ton Toggle en POST)
 const removeSpotFavorite = async (spotId: string) => {
   try {
-    await api.post(`/spots/${spotId}/favorite`) // POST car c'est un Toggle côté .NET
+    await api.post(`/Spots/${spotId}/favorite`) // POST car c'est un Toggle côté .NET
     favoriteSpots.value = favoriteSpots.value.filter(s => s.spotsId !== spotId)
   } catch (err) {
     console.error('Erreur suppression favori spot:', err)
@@ -39,7 +39,7 @@ const removeSpotFavorite = async (spotId: string) => {
 // Supprimer une annonce des favoris (Appel de ton Toggle en POST)
 const removeAdFavorite = async (adId: string) => {
   try {
-    await api.post(`/ads/${adId}/favorite`) // Route minuscules pour matcher l'API standard et POST pour le Toggle
+    await api.post(`/Ads/${adId}/favorite`) // Route minuscules pour matcher l'API standard et POST pour le Toggle
     favoriteAds.value = favoriteAds.value.filter(a => a.adId !== adId)
   } catch (err) {
     console.error('Erreur suppression favori annonce:', err)
@@ -62,8 +62,8 @@ const fetchFavorites = async () => {
   try {
     loading.value = true
     const [spotsRes, adsRes] = await Promise.all([
-      api.get('/spots/favorites'),
-      api.get('/ads/favorites') // Route passée en minuscules (plus propre pour l'url)
+      api.get('/Spots/favorites'),
+      api.get('/Ads/favorites') // Route passée en minuscules (plus propre pour l'url)
     ])
     favoriteSpots.value = spotsRes.data || []
     favoriteAds.value = adsRes.data || []
