@@ -11,16 +11,49 @@ const loading = ref(true)
 const errorMessage = ref('')
 const currentUserId = localStorage.getItem('userId')
 
-// Charger les annonces depuis l'API .NET
-const fetchAds = async () => {
+// Traquer les IDs des annonces favorites de l'utilisateur
+const favoriteAdIds = ref(new Set())
+
+// Charger les annonces et les favoris en parallèle
+const fetchAdsAndFavorites = async () => {
   try {
-    const response = await api.get('/Ads')
-    ads.value = response.data
+    loading.value = true
+
+    // On lance les deux requêtes en même temps
+    const [adsResponse, favsResponse] = await Promise.all([
+      api.get('/Ads'),
+      api.get('/ads/favorites').catch(() => ({ data: [] })) // Fallback si pas connecté ou erreur
+    ])
+
+    // Stocker les IDs des favoris dans un Set pour une recherche ultra-rapide (O(1))
+    if (favsResponse.data) {
+      favoriteAdIds.value = new Set(favsResponse.data.map(fav => fav.adId))
+    }
+
+    // Associer l'état initial du favori à chaque annonce
+    ads.value = (adsResponse.data || []).map(ad => ({
+      ...ad,
+      isFavorite: favoriteAdIds.value.has(ad.adId)
+    }))
+
   } catch (error) {
-    console.error('Erreur lors du chargement des annonces:', error)
+    console.error('Erreur lors du chargement des données:', error)
     errorMessage.value = 'Impossible de charger le marketplace. Réessaye plus tard.'
   } finally {
     loading.value = false
+  }
+}
+
+// Ajouter / Retirer une annonce des favoris
+const toggleFavoriteAd = async (ad) => {
+  try {
+    // Appel direct à ton endpoint POST [HttpPost("{id}/favorite")]
+    const res = await api.post(`/ads/${ad.adId}/favorite`)
+
+    // Mise à jour de l'état réactif grâce au retour du tuple de ton backend
+    ad.isFavorite = res.data.isFavorite
+  } catch (err) {
+    console.error("Erreur lors de la modification du favori :", err)
   }
 }
 
@@ -42,18 +75,16 @@ const generateContactLink = (contact, adTitle) => {
 
   const message = `Bonjour, je viens de voir ton annonce pour "${adTitle}" sur StreetPacker. Est-elle toujours disponible ?`
 
-  // 📬 CAS 1 : C'est un e-mail (présence du @)
   if (contact.includes('@')) {
     return `mailto:${contact}?subject=${encodeURIComponent('StreetPacker - Annonce : ' + adTitle)}&body=${encodeURIComponent(message)}`
   }
 
-  // 💬 CAS 2 : C'est un numéro WhatsApp (uniquement des chiffres)
   const cleanNumber = contact.replace(/[^0-9]/g, '')
   return `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`
 }
 
 onMounted(() => {
-  fetchAds()
+  fetchAdsAndFavorites()
 })
 </script>
 
@@ -118,16 +149,33 @@ onMounted(() => {
               📍 {{ ad.locationArea }}
             </span>
 
-            <button
-                v-if="ad.userId === currentUserId"
-                @click.stop="deleteAd(ad.adId)"
-                class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm text-[#FF6B6B] hover:bg-[#FF6B6B] hover:text-white p-2 rounded-full shadow-sm transition-all duration-150 active:scale-90"
-                title="Supprimer mon annonce"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
+            <!-- BOUTONS ACTIONS POSITIONNÉS EN ABSOLUTE (EN HAUT À DROITE) -->
+            <div class="absolute top-2 right-2 flex items-center gap-1.5 z-10">
+
+              <!-- BOUTON CŒUR FAVORIS -->
+              <button
+                  @click.stop="toggleFavoriteAd(ad)"
+                  class="bg-white/95 backdrop-blur-sm shadow-sm p-2 rounded-full transition-all duration-150 active:scale-90"
+                  :class="ad.isFavorite ? 'text-[#FF6B6B]' : 'text-[#5C756E] hover:text-[#FF6B6B]'"
+                  :title="ad.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" :fill="ad.isFavorite ? 'currentColor' : 'none'" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              </button>
+
+              <!-- BOUTON SUPPRIMER (UNIQUEMENT SI C'EST MON ANNONCE) -->
+              <button
+                  v-if="ad.userId === currentUserId"
+                  @click.stop="deleteAd(ad.adId)"
+                  class="bg-white/95 backdrop-blur-sm text-[#5C756E] hover:bg-[#FF6B6B] hover:text-white p-2 rounded-full shadow-sm transition-all duration-150 active:scale-90"
+                  title="Supprimer mon annonce"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           <div class="p-3 flex flex-col justify-between flex-grow">
@@ -142,7 +190,6 @@ onMounted(() => {
 
             <div class="mt-3 pt-2.5 border-t border-[#E4ECE9] flex justify-between items-center">
               <span class="text-[9px] uppercase tracking-wider text-[#5C756E]/40 font-semibold">Détails</span>
-              <!-- Lien d'action dynamique -->
               <a
                   :href="generateContactLink(ad.contactLink, ad.title)"
                   target="_blank"
@@ -180,13 +227,3 @@ onMounted(() => {
 
   </div>
 </template>
-
-<style scoped>
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-</style>
