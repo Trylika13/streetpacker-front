@@ -50,6 +50,51 @@
           </button>
         </div>
 
+        <div class="flex items-center justify-between mb-5 bg-[#F4F7F5]/60 border border-[#E4ECE9] rounded-xl p-2.5">
+          <div class="flex items-center gap-2">
+            <span class="relative flex h-2 w-2">
+              <span :class="{
+                'bg-green-500': (selectedSpot.freshnessScore ?? selectedSpot.FreshnessScore) >= 75,
+                'bg-amber-500': (selectedSpot.freshnessScore ?? selectedSpot.FreshnessScore) >= 25 && (selectedSpot.freshnessScore ?? selectedSpot.FreshnessScore) < 75,
+                'bg-red-500': (selectedSpot.freshnessScore ?? selectedSpot.FreshnessScore) < 25
+              }" class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"></span>
+              <span :class="{
+                'bg-green-500': (selectedSpot.freshnessScore ?? selectedSpot.FreshnessScore) >= 75,
+                'bg-amber-500': (selectedSpot.freshnessScore ?? selectedSpot.FreshnessScore) >= 25 && (selectedSpot.freshnessScore ?? selectedSpot.FreshnessScore) < 75,
+                'bg-red-500': (selectedSpot.freshnessScore ?? selectedSpot.FreshnessScore) < 25
+              }" class="relative inline-flex rounded-full h-2 w-2"></span>
+            </span>
+            <span class="text-xs font-medium text-[#5C756E]">
+              Indice de fiabilité :
+              <span class="font-bold text-[#1E2E2A]">{{ selectedSpot.freshnessScore ?? selectedSpot.FreshnessScore ?? 100 }}%</span>
+            </span>
+          </div>
+
+          <div class="flex items-center gap-1 bg-white border border-[#E4ECE9] rounded-lg p-0.5 shadow-sm">
+            <button
+                @click="voteSpot(selectedSpot, true)"
+                class="p-1.5 text-[#5C756E]/70 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors duration-200"
+                title="Valider (+25%)"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
+              </svg>
+            </button>
+
+            <div class="w-[1px] h-3 bg-[#E4ECE9]"></div>
+
+            <button
+                @click="voteSpot(selectedSpot, false)"
+                class="p-1.5 text-[#5C756E]/70 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors duration-200"
+                title="Signaler un problème (-25%)"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.2" stroke="currentColor" class="w-4 h-4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
         <p class="text-[#5C756E] text-sm leading-relaxed mb-6">
           {{ selectedSpot.description || selectedSpot.Description || 'Aucune description disponible pour ce lieu.' }}
         </p>
@@ -175,7 +220,6 @@
 
   </div>
 </template>
-
 <script setup>
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import { config, GeolocateControl, Map, MapStyle, Marker } from '@maptiler/sdk';
@@ -296,6 +340,7 @@ watch(() => props.newSpotCoords, (newVal) => {
 const displaySpots = () => {
   if (!mapInstance) return;
 
+  // Nettoyage propre de l'ancien tableau local
   mapMarkers.forEach(m => m.remove());
   mapMarkers = [];
 
@@ -304,7 +349,18 @@ const displaySpots = () => {
     const lat = spot.latitude;
 
     if (lng && lat) {
-      const marker = new Marker({ color: "#00A896" })
+      // 👑 1. Détermination de la couleur selon tes paliers de 25 points
+      const score = spot.freshnessScore ?? spot.FreshnessScore ?? 100;
+      let markerColor = "#00A896"; // Vert par défaut (>= 75)
+
+      if (score < 25) {
+        markerColor = "#FF6B6B"; // Rouge (< 25)
+      } else if (score < 75) {
+        markerColor = "#F59E0B"; // Orange / Ambre (Entre 25 et 74)
+      }
+
+      // 👑 2. On injecte la couleur dynamique dans le marqueur MapTiler
+      const marker = new Marker({ color: markerColor })
           .setLngLat([lng, lat])
           .addTo(mapInstance);
 
@@ -326,7 +382,6 @@ const displaySpots = () => {
     }
   });
 };
-
 const handleSpotImageChange = async (event) => {
   const target = event.target;
   const file = target.files?.[0];
@@ -392,6 +447,52 @@ const toggleFavoriteSpot = async (spot) => {
   }
 }
 
+// 🛠️ FONCTION POUR VOTER (+25% / -25%) SUR LE SPOT SÉLECTIONNÉ
+const voteSpot = async (spot, isUpvote) => {
+  try {
+    // 1. Récupération safe de l'ID
+    const id = spot.spotsId || spot.id || spot.Id || spot.SpotsId;
+
+    // 2. Appel API Render
+    const res = await api.post(`/spots/${id}/vote?isUpvote=${isUpvote}`);
+
+    // 3. Extraction du nouveau score depuis la réponse de ton contrôleur C#
+    const newScore = res.data.freshnessScore ?? res.data.FreshnessScore;
+
+    // 4. Mise à jour de l'affichage dans le volet de détails (selectedSpot est un ref local, donc modifiable)
+    if (spot.freshnessScore !== undefined) spot.freshnessScore = newScore;
+    if (spot.FreshnessScore !== undefined) spot.FreshnessScore = newScore;
+    if (spot.freshnessScore === undefined && spot.FreshnessScore === undefined) {
+      spot.freshnessScore = newScore;
+    }
+
+    // 👑 5. LE FIX DU BUG : On change DIRECTEMENT la couleur du marker sur la carte
+    // On cherche l'index du spot dans le tableau filtré pour retrouver le bon Marker MapTiler
+    const spotIndex = filteredSpots.value.findIndex(s => (s.spotsId || s.id || s.Id) === id);
+
+    if (spotIndex !== -1 && mapMarkers[spotIndex]) {
+      // Détermination de la nouvelle couleur
+      let newColor = "#00A896"; // Vert (>= 75)
+      if (newScore < 25) {
+        newColor = "#FF6B6B"; // Rouge (< 25)
+      } else if (newScore < 75) {
+        newColor = "#F59E0B"; // Orange (Entre 25 et 74)
+      }
+
+      // MapTiler permet de modifier la couleur de l'élément HTML du marqueur
+      // On récupère le SVG du pin MapTiler et on change sa couleur en direct
+      const markerElement = mapMarkers[spotIndex].getElement();
+      const svgElement = markerElement.querySelector('svg path');
+      if (svgElement) {
+        svgElement.setAttribute('fill', newColor);
+      }
+    }
+
+  } catch (err) {
+    console.error("Erreur lors du vote :", err);
+  }
+};
+// 🛠️ NETTOYAGE COMPLET LORS DU UNMOUNT
 // 👑 SUPPRESSION : Appel API dynamique selon le rôle de la session
 const deleteSpot = async (spot) => {
   const id = spot.id || spot.spotsId || spot.SpotsId;
