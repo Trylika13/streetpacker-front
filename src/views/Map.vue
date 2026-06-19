@@ -124,6 +124,15 @@
             </svg>
           </button>
         </div>
+
+        <div v-if="isOwner(selectedSpot) || isAdmin" class="mt-5 pt-4 border-t border-[#E4ECE9]">
+          <button
+              @click="deleteSpot(selectedSpot)"
+              class="w-full h-12 bg-[#FF6B6B]/10 hover:bg-[#FF6B6B] text-[#FF6B6B] hover:text-white font-medium rounded-xl text-sm transition-all flex items-center justify-center gap-2 active:scale-95 border border-[#FF6B6B]/20"
+          >
+            🗑️ {{ isAdmin ? 'Supprimer le spot (Mode Admin)' : 'Supprimer mon spot' }}
+          </button>
+        </div>
       </div>
     </transition>
 
@@ -215,6 +224,7 @@
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import { config, GeolocateControl, Map, MapStyle, Marker } from '@maptiler/sdk';
 import api from '@/api/axios'
+import { useAuth } from '@/stores/auth'; // 👑 Import du store pour choper le rôle
 import { compressImage, uploadImage } from '@/api/mediaService';
 import '@maptiler/sdk/dist/maptiler-sdk.css';
 
@@ -227,8 +237,8 @@ const props = defineProps({
 const emit = defineEmits(['coords-captured', 'close-form', 'spot-created']);
 
 const mapContainer = ref(null);
+const authStore = useAuth(); // 👑 Initialisation du store d'auth
 
-// 🛠️ FIX 1 : Variables strictement locales pour couper TOUTE réactivité de Vue sur les gros objets
 let mapInstance = null;
 let mapMarkers = [];
 
@@ -243,7 +253,18 @@ const newSpotImageUrl = ref('')
 const isUploadingSpotImage = ref(false)
 const spotImageInput = ref(null);
 
-// 🛠️ FIX 3 : Utilisation d'une fonction fléchée stable pour le resize
+
+const isAdmin = computed(() => {
+  return authStore.user?.roles?.includes('Admin') || false;
+});
+// 👤 PROPRIÉTAIRE : Vérifie si le profil connecté a créé le spot sélectionné
+const isOwner = (spot) => {
+  if (!spot) return false;
+  const currentUserId = authStore.user?.id || authStore.user?.UserId;
+  const spotOwnerId = spot.userId || spot.UserId;
+  return currentUserId && spotOwnerId && currentUserId === spotOwnerId;
+};
+
 const checkScreenSize = () => {
   isLaptop.value = window.innerWidth >= 1024;
 };
@@ -263,7 +284,6 @@ onMounted(() => {
   window.addEventListener('resize', checkScreenSize);
 
   if (mapContainer.value) {
-    // 🛠️ FIX 1 Suite : On stocke dans la variable brute locale
     mapInstance = new Map({
       container: mapContainer.value,
       style: MapStyle.OPENSTREETMAP,
@@ -417,16 +437,10 @@ const copyCoords = async (lat, lng) => {
   }
 };
 
-// 🛠️ FONCTION POUR LIKER/UNLIKER LE SPOT DEPUIS LA MAP
 const toggleFavoriteSpot = async (spot) => {
   try {
-    // On récupère le bon ID (gestion du fallback spotsId ou id)
     const id = spot.spotsId || spot.id || spot.SpotsId;
-
-    // Appel à ton endpoint POST .NET [HttpPost("{id}/favorite")]
     const res = await api.post(`/spots/${id}/favorite`)
-
-    // Le tuple .NET renvoie { isFavorite: true/false }, on met à jour la réactivité Vue
     spot.isFavorite = res.data.isFavorite
   } catch (err) {
     console.error("Erreur lors de la modification du spot favori :", err)
@@ -479,6 +493,26 @@ const voteSpot = async (spot, isUpvote) => {
   }
 };
 // 🛠️ NETTOYAGE COMPLET LORS DU UNMOUNT
+// 👑 SUPPRESSION : Appel API dynamique selon le rôle de la session
+const deleteSpot = async (spot) => {
+  const id = spot.id || spot.spotsId || spot.SpotsId;
+  if (!id) return;
+
+  if (!confirm(isAdmin.value ? "🔥 MODE ADMIN : Confirmer la suppression définitive de ce spot ?" : "Es-tu sûr de vouloir supprimer ton spot ?")) return;
+
+  try {
+    // Si Admin, on tape sur la route admin dédiée, sinon sur la route utilisateur classique
+    const endpoint = isAdmin.value ? `/spots/admin/${id}` : `/spots/${id}`;
+    await api.delete(endpoint);
+
+    selectedSpot.value = null; // Ferme le volet latéral
+    emit('spot-created');      // Demande au Dashboard d'actualiser la liste globale des spots
+  } catch (err) {
+    console.error("Erreur lors de la suppression du spot :", err);
+    alert("Impossible de supprimer ce spot. Vérifie tes droits.");
+  }
+};
+
 onUnmounted(() => {
   window.removeEventListener('resize', checkScreenSize);
 
@@ -500,7 +534,6 @@ onUnmounted(() => {
   display: none !important;
 }
 
-/* Aligne le bouton GPS sous le notch de l'iPhone proprement */
 :deep(.maplibregl-ctrl-top-right) {
   margin-top: calc(75px + env(safe-area-inset-top)) !important;
 }
