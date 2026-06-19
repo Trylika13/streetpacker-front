@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-[#F4F7F5] text-[#1E2E2A] pb-24 lg:pb-0 font-sans lg:flex lg:items-stretch">
+  <div class="pt-[env(safe-area-inset-top)] min-h-screen bg-[#F4F7F5] text-[#1E2E2A] pb-24 lg:pb-0 font-sans lg:flex lg:items-stretch">
 
     <!-- SIDEBAR LEFT (DESKTOP) -->
     <div class="p-6 pt-8 bg-white border-b lg:border-b-0 lg:border-r border-[#E4ECE9] relative lg:w-80 lg:shrink-0 lg:flex lg:flex-col lg:h-screen lg:sticky lg:top-0 lg:pt-16">
