@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import api from "../../api/axios";
+import api from "../../api/axios"
+import { useAuth } from '../../stores/auth' // 👑 Import de ton store d'authentification
 
 const router = useRouter()
+const authStore = useAuth() // 👑 Initialisation du store Pinia
+
 const username = ref('')
 const password = ref('')
 const error = ref<string | null>(null)
@@ -14,17 +17,16 @@ const login = async () => {
   loading.value = true
 
   try {
-    const response = await api.post('/auth/login', {
+    const response = await api.post('/Auth/login', {
       username: username.value,
       password: password.value
     })
 
-    localStorage.setItem('token', response.data.accessToken)
     localStorage.setItem('refreshToken', response.data.refreshToken)
 
+    authStore.authenticate(response.data.accessToken)
+
     router.push('/dashboard')
-  } catch (err: any) {
-    error.value = "Identifiants incorrects. Réessaie, backpacker !"
   } finally {
     loading.value = false
   }
@@ -125,4 +127,3 @@ const login = async () => {
   opacity: 0;
 }
 </style>
-
