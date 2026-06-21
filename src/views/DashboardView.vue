@@ -16,8 +16,8 @@ const fetchSpots = async () => {
     // 🛠️ Ligne 'loading.value = true' SUPPRIMÉE ici !
 
     const [spotsResponse, favoritesResponse] = await Promise.all([
-      api.get('/spots'),
-      api.get('/spots/favorites').catch(() => ({ data: [] }))
+      api.get('/Spots'),
+      api.get('/Spots/favorites').catch(() => ({ data: [] }))
     ]);
 
     // ... le reste de ta fonction fetchSpots reste identique
