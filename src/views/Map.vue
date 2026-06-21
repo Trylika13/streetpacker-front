@@ -285,8 +285,8 @@ const isSubmitting = ref(false)
 const newSpotImageUrl = ref('')
 const isUploadingSpotImage = ref(false)
 const spotImageInput = ref(null);
+const isCopied = ref(false);
 
-// --- 👑 GESTION DES TAGS ---
 const selectedTag = ref(null);
 const availableTags = ref([]);
 const selectedTagIds = ref([]); // Pour stocker les sélections du formulaire d'ajout
