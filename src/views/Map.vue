@@ -3,16 +3,27 @@
 
     <div ref="mapContainer" class="w-full h-full absolute inset-0 z-0"></div>
 
-    <div class="absolute top-[calc(12px+env(safe-area-inset-top))] left-0 right-0 lg:top-4 lg:left-6 lg:right-auto lg:mx-0 z-[1000] px-4 w-full max-w-md mx-auto pointer-events-none">
-      <div class="w-full h-12 bg-white/90 backdrop-blur-md border border-[#E4ECE9] rounded-2xl px-4 flex items-center gap-3 shadow-sm pointer-events-auto">
-        <span class="text-[#5C756E]/40 text-sm">🔍</span>
-        <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Rechercher"
-            class="bg-transparent flex-1 h-full text-sm text-[#1E2E2A] outline-none placeholder:text-[#5C756E]/30"
-        />
-        <button v-if="searchQuery" @click="searchQuery = ''" class="text-[#5C756E]/40 text-xs hover:text-[#1E2E2A]">✕</button>
+    <div class="absolute top-[calc(12px+env(safe-area-inset-top))] left-0 right-0 z-[1000] px-4 w-full max-w-md mx-auto pointer-events-none">
+      <div class="w-full flex gap-2 overflow-x-auto no-scrollbar pointer-events-auto py-1">
+
+        <button
+            @click="selectedTag = null"
+            :class="!selectedTag ? 'bg-[#00A896] text-white border-[#00A896]' : 'bg-white/90 text-[#1E2E2A] border-[#E4ECE9]'"
+            class="px-4 h-9 backdrop-blur-md border text-xs font-medium rounded-full shadow-sm transition-all whitespace-nowrap active:scale-95"
+        >
+          Tous les lieux
+        </button>
+
+        <button
+            v-for="tag in availableTags"
+            :key="tag.id"
+            @click="selectedTag = tag.name"
+            :class="selectedTag === tag.name ? 'bg-[#00A896] text-white border-[#00A896]' : 'bg-white/90 text-[#1E2E2A] border-[#E4ECE9]'"
+            class="px-4 h-9 backdrop-blur-md border text-xs font-medium rounded-full shadow-sm transition-all whitespace-nowrap active:scale-95"
+        >
+          {{ tag.name }}
+        </button>
+
       </div>
     </div>
 
@@ -109,7 +120,7 @@
               class="flex-1 h-12 font-medium rounded-xl shadow-sm active:scale-95 transition-all text-sm tracking-wide flex items-center justify-center gap-2"
               :class="isCopied ? 'bg-[#1E2E2A] text-[#00A896] border border-[#00A896]/20' : 'bg-[#00A896] text-white'"
           >
-            <span v-if="isCopied">✓ Coordonnées copiées !</span>
+            <span v-if="isCopied">Coordonnées copiées</span>
             <span v-else>Copier les coordonnées</span>
           </button>
 
@@ -130,7 +141,7 @@
               @click="deleteSpot(selectedSpot)"
               class="w-full h-12 bg-[#FF6B6B]/10 hover:bg-[#FF6B6B] text-[#FF6B6B] hover:text-white font-medium rounded-xl text-sm transition-all flex items-center justify-center gap-2 active:scale-95 border border-[#FF6B6B]/20"
           >
-            🗑️ {{ isAdmin ? 'Supprimer le spot (Mode Admin)' : 'Supprimer mon spot' }}
+            {{ isAdmin ? 'Supprimer le spot (Mode Admin)' : 'Supprimer mon spot' }}
           </button>
         </div>
       </div>
@@ -168,7 +179,10 @@
             >
               <img v-if="newSpotImageUrl" :src="newSpotImageUrl" class="w-full h-full object-cover" />
               <div v-else class="flex flex-col items-center text-[#5C756E]/40">
-                <span class="text-xl">📸</span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+                </svg>
                 <span class="text-[9px] uppercase font-bold tracking-wider mt-1.5">Ajouter une photo</span>
               </div>
 
@@ -207,10 +221,30 @@
             ></textarea>
           </div>
 
+          <div class="space-y-2 pt-1">
+            <label class="block text-[10px] uppercase tracking-[0.2em] text-[#5C756E] font-semibold">
+              Caractéristiques du lieu
+            </label>
+            <div class="flex flex-wrap gap-2">
+              <button
+                  v-for="tag in availableTags"
+                  :key="tag.id"
+                  type="button"
+                  @click="toggleTagSelection(tag.id)"
+                  :class="selectedTagIds.includes(tag.id)
+                    ? 'bg-[#00A896] text-white border-[#00A896]'
+                    : 'bg-[#F4F7F5] text-[#5C756E] border-[#E4ECE9] hover:border-[#00A896]/40'"
+                  class="px-3 py-1.5 border text-xs font-medium rounded-xl transition-all active:scale-95 flex items-center gap-1"
+              >
+                {{ tag.name }}
+              </button>
+            </div>
+          </div>
+
           <button
               type="submit"
               :disabled="isSubmitting"
-              class="w-full h-12 bg-[#00A896] text-white font-medium rounded-xl text-sm tracking-wide active:scale-95 transition-all mt-2 disabled:opacity-40"
+              class="w-full h-12 bg-[#00A896] text-white font-medium rounded-xl text-sm tracking-wide active:scale-95 transition-all mt-4 disabled:opacity-40"
           >
             {{ isSubmitting ? 'Enregistrement...' : 'Partager le spot' }}
           </button>
@@ -224,7 +258,7 @@
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import { config, GeolocateControl, Map, MapStyle, Marker } from '@maptiler/sdk';
 import api from '@/api/axios'
-import { useAuth } from '@/stores/auth'; // 👑 Import du store pour choper le rôle
+import { useAuth } from '@/stores/auth';
 import { compressImage, uploadImage } from '@/api/mediaService';
 import '@maptiler/sdk/dist/maptiler-sdk.css';
 
@@ -237,14 +271,13 @@ const props = defineProps({
 const emit = defineEmits(['coords-captured', 'close-form', 'spot-created']);
 
 const mapContainer = ref(null);
-const authStore = useAuth(); // 👑 Initialisation du store d'auth
+const authStore = useAuth();
 
 let mapInstance = null;
 let mapMarkers = [];
 
 const selectedSpot = ref(null);
 const isLaptop = ref(false);
-const searchQuery = ref('');
 
 const newSpotTitle = ref('');
 const newSpotDescription = ref('');
@@ -253,11 +286,15 @@ const newSpotImageUrl = ref('')
 const isUploadingSpotImage = ref(false)
 const spotImageInput = ref(null);
 
+// --- 👑 GESTION DES TAGS ---
+const selectedTag = ref(null);
+const availableTags = ref([]);
+const selectedTagIds = ref([]); // Pour stocker les sélections du formulaire d'ajout
 
 const isAdmin = computed(() => {
   return authStore.user?.roles?.includes('Admin') || false;
 });
-// 👤 PROPRIÉTAIRE : Vérifie si le profil connecté a créé le spot sélectionné
+
 const isOwner = (spot) => {
   if (!spot) return false;
   const currentUserId = authStore.user?.id || authStore.user?.UserId;
@@ -270,18 +307,34 @@ const checkScreenSize = () => {
 };
 
 const filteredSpots = computed(() => {
+  if (!selectedTag.value) return props.spots;
+
   return props.spots.filter(spot => {
-    const title = (spot.title || spot.Title || '').toLowerCase();
-    const query = searchQuery.value.toLowerCase();
-    return title.includes(query);
+    const tagsList = spot.tags || spot.Tags || [];
+
+
+    return tagsList.includes(selectedTag.value);
   });
 });
+
+// --- API FETCH ---
+const loadSpotTags = async () => {
+  try {
+    const res = await api.get('/spots/tags');
+    availableTags.value = res.data;
+  } catch (err) {
+    console.error("Erreur lors du chargement des tags 'Spot' :", err);
+  }
+};
 
 onMounted(() => {
   config.apiKey = import.meta.env.VITE_MAPTILER_KEY;
 
   checkScreenSize();
   window.addEventListener('resize', checkScreenSize);
+
+  // On charge les tags de la DB
+  loadSpotTags();
 
   if (mapContainer.value) {
     mapInstance = new Map({
@@ -333,14 +386,14 @@ watch(() => props.newSpotCoords, (newVal) => {
   if (!newVal) {
     newSpotTitle.value = '';
     newSpotDescription.value = '';
-    newSpotImageUrl.value = ''
+    newSpotImageUrl.value = '';
+    selectedTagIds.value = []; // Reset des cases cochées
   }
 });
 
 const displaySpots = () => {
   if (!mapInstance) return;
 
-  // Nettoyage propre de l'ancien tableau local
   mapMarkers.forEach(m => m.remove());
   mapMarkers = [];
 
@@ -349,17 +402,15 @@ const displaySpots = () => {
     const lat = spot.latitude;
 
     if (lng && lat) {
-      // 👑 1. Détermination de la couleur selon tes paliers de 25 points
       const score = spot.freshnessScore ?? spot.FreshnessScore ?? 100;
-      let markerColor = "#00A896"; // Vert par défaut (>= 75)
+      let markerColor = "#00A896";
 
       if (score < 25) {
-        markerColor = "#FF6B6B"; // Rouge (< 25)
+        markerColor = "#FF6B6B";
       } else if (score < 75) {
-        markerColor = "#F59E0B"; // Orange / Ambre (Entre 25 et 74)
+        markerColor = "#F59E0B";
       }
 
-      // 👑 2. On injecte la couleur dynamique dans le marqueur MapTiler
       const marker = new Marker({ color: markerColor })
           .setLngLat([lng, lat])
           .addTo(mapInstance);
@@ -382,6 +433,7 @@ const displaySpots = () => {
     }
   });
 };
+
 const handleSpotImageChange = async (event) => {
   const target = event.target;
   const file = target.files?.[0];
@@ -403,6 +455,16 @@ const triggerSpotImageUpload = () => {
   spotImageInput.value?.click();
 }
 
+// --- GESTION DES CASES À COCHER (FORMULAIRE) ---
+const toggleTagSelection = (tagId) => {
+  const index = selectedTagIds.value.indexOf(tagId);
+  if (index === -1) {
+    selectedTagIds.value.push(tagId);
+  } else {
+    selectedTagIds.value.splice(index, 1);
+  }
+};
+
 const submitNewSpot = async () => {
   if (!props.newSpotCoords) return;
   isSubmitting.value = true;
@@ -413,7 +475,9 @@ const submitNewSpot = async () => {
       description: newSpotDescription.value,
       latitude: props.newSpotCoords.lat,
       longitude: props.newSpotCoords.lng,
-      imageUrl: newSpotImageUrl.value
+      imageUrl: newSpotImageUrl.value,
+      // 👑 On envoie la liste des UUIDs cochés
+      tagIds: selectedTagIds.value
     });
     emit('spot-created');
   } catch (error) {
@@ -422,8 +486,6 @@ const submitNewSpot = async () => {
     isSubmitting.value = false;
   }
 };
-
-const isCopied = ref(false);
 
 const copyCoords = async (lat, lng) => {
   if (!lat || !lng) return;
@@ -447,40 +509,28 @@ const toggleFavoriteSpot = async (spot) => {
   }
 }
 
-// 🛠️ FONCTION POUR VOTER (+25% / -25%) SUR LE SPOT SÉLECTIONNÉ
 const voteSpot = async (spot, isUpvote) => {
   try {
-    // 1. Récupération safe de l'ID
     const id = spot.spotsId || spot.id || spot.Id || spot.SpotsId;
-
-    // 2. Appel API Render
     const res = await api.post(`/spots/${id}/vote?isUpvote=${isUpvote}`);
-
-    // 3. Extraction du nouveau score depuis la réponse de ton contrôleur C#
     const newScore = res.data.freshnessScore ?? res.data.FreshnessScore;
 
-    // 4. Mise à jour de l'affichage dans le volet de détails (selectedSpot est un ref local, donc modifiable)
     if (spot.freshnessScore !== undefined) spot.freshnessScore = newScore;
     if (spot.FreshnessScore !== undefined) spot.FreshnessScore = newScore;
     if (spot.freshnessScore === undefined && spot.FreshnessScore === undefined) {
       spot.freshnessScore = newScore;
     }
 
-    // 👑 5. LE FIX DU BUG : On change DIRECTEMENT la couleur du marker sur la carte
-    // On cherche l'index du spot dans le tableau filtré pour retrouver le bon Marker MapTiler
     const spotIndex = filteredSpots.value.findIndex(s => (s.spotsId || s.id || s.Id) === id);
 
     if (spotIndex !== -1 && mapMarkers[spotIndex]) {
-      // Détermination de la nouvelle couleur
-      let newColor = "#00A896"; // Vert (>= 75)
+      let newColor = "#00A896";
       if (newScore < 25) {
-        newColor = "#FF6B6B"; // Rouge (< 25)
+        newColor = "#FF6B6B";
       } else if (newScore < 75) {
-        newColor = "#F59E0B"; // Orange (Entre 25 et 74)
+        newColor = "#F59E0B";
       }
 
-      // MapTiler permet de modifier la couleur de l'élément HTML du marqueur
-      // On récupère le SVG du pin MapTiler et on change sa couleur en direct
       const markerElement = mapMarkers[spotIndex].getElement();
       const svgElement = markerElement.querySelector('svg path');
       if (svgElement) {
@@ -492,8 +542,7 @@ const voteSpot = async (spot, isUpvote) => {
     console.error("Erreur lors du vote :", err);
   }
 };
-// 🛠️ NETTOYAGE COMPLET LORS DU UNMOUNT
-// 👑 SUPPRESSION : Appel API dynamique selon le rôle de la session
+
 const deleteSpot = async (spot) => {
   const id = spot.id || spot.spotsId || spot.SpotsId;
   if (!id) return;
@@ -501,12 +550,11 @@ const deleteSpot = async (spot) => {
   if (!confirm(isAdmin.value ? "🔥 MODE ADMIN : Confirmer la suppression définitive de ce spot ?" : "Es-tu sûr de vouloir supprimer ton spot ?")) return;
 
   try {
-    // Si Admin, on tape sur la route admin dédiée, sinon sur la route utilisateur classique
     const endpoint = isAdmin.value ? `/spots/admin/${id}` : `/spots/${id}`;
     await api.delete(endpoint);
 
-    selectedSpot.value = null; // Ferme le volet latéral
-    emit('spot-created');      // Demande au Dashboard d'actualiser la liste globale des spots
+    selectedSpot.value = null;
+    emit('spot-created');
   } catch (err) {
     console.error("Erreur lors de la suppression du spot :", err);
     alert("Impossible de supprimer ce spot. Vérifie tes droits.");
@@ -527,7 +575,6 @@ onUnmounted(() => {
   }
 });
 </script>
-
 <style scoped>
 :deep(.maplibregl-ctrl-bottom-right),
 :deep(.maplibregl-ctrl-bottom-left) {

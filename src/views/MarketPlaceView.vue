@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/api/axios'
 
@@ -13,6 +13,30 @@ const currentUserId = localStorage.getItem('userId')
 
 // Traquer les IDs des annonces favorites de l'utilisateur
 const favoriteAdIds = ref(new Set())
+
+const selectedTag = ref(null)
+const availableTags = ref([])
+
+const loadMarketplaceTags = async () => {
+  try {
+    const res = await api.get('/Ads/tags')
+    availableTags.value = res.data
+  } catch (err) {
+    console.error("Erreur lors du chargement des tags marketplace :", err)
+  }
+}
+
+const filteredAds = computed(() => {
+  if (!selectedTag.value) return ads.value
+
+  return ads.value.filter(ad => {
+    // On récupère le tableau peu importe s'il s'appelle tags ou Tags
+    const tagsList = ad.tags || ad.Tags || []
+
+    // On s'assure que chaque élément est comparé proprement en minuscules
+    return tagsList.some(t => t.toLowerCase() === selectedTag.value.toLowerCase())
+  })
+})
 
 // Charger les annonces et les favoris en parallèle
 const fetchAdsAndFavorites = async () => {
@@ -47,10 +71,7 @@ const fetchAdsAndFavorites = async () => {
 // Ajouter / Retirer une annonce des favoris
 const toggleFavoriteAd = async (ad) => {
   try {
-    // Appel direct à ton endpoint POST [HttpPost("{id}/favorite")]
     const res = await api.post(`/Ads/${ad.adId}/favorite`)
-
-    // Mise à jour de l'état réactif grâce au retour du tuple de ton backend
     ad.isFavorite = res.data.isFavorite
   } catch (err) {
     console.error("Erreur lors de la modification du favori :", err)
@@ -85,6 +106,7 @@ const generateContactLink = (contact, adTitle) => {
 
 onMounted(() => {
   fetchAdsAndFavorites()
+  loadMarketplaceTags() // 👑 Lancement du chargement des tags
 })
 </script>
 
@@ -122,7 +144,29 @@ onMounted(() => {
       </div>
     </div>
 
-    <div class="max-w-7xl mx-auto p-3 sm:p-6 mt-4">
+    <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 mt-4">
+      <div class="flex gap-2 overflow-x-auto no-scrollbar py-1">
+        <button
+            @click="selectedTag = null"
+            :class="!selectedTag ? 'bg-[#00A896] text-white border-[#00A896]' : 'bg-white text-[#1E2E2A] border-[#E4ECE9]'"
+            class="px-4 h-9 border text-xs font-medium rounded-full shadow-sm transition-all whitespace-nowrap active:scale-95"
+        >
+          Tout l'équipement
+        </button>
+
+        <button
+            v-for="tag in availableTags"
+            :key="tag.id"
+            @click="selectedTag = tag.name"
+            :class="selectedTag === tag.name ? 'bg-[#00A896] text-white border-[#00A896]' : 'bg-white text-[#1E2E2A] border-[#E4ECE9]'"
+            class="px-4 h-9 border text-xs font-medium rounded-full shadow-sm transition-all whitespace-nowrap active:scale-95"
+        >
+          {{ tag.name }}
+        </button>
+      </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto p-3 sm:p-6 mt-1">
 
       <div v-if="loading" class="text-center py-20 text-sm font-medium text-[#5C756E]/60 italic">
         Recherche des meilleures offres en cours... 🌊
@@ -132,11 +176,11 @@ onMounted(() => {
         {{ errorMessage }}
       </div>
 
-      <div v-if="!loading && ads.length > 0" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div v-if="!loading && filteredAds.length > 0" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
         <div
-            v-for="ad in ads"
+            v-for="ad in filteredAds"
             :key="ad.adId"
-            class="bg-white rounded-2xl border border-[#E4ECE9] overflow-hidden flex flex-col justify-between group relative shadow-sm hover:border-[#00A896]/30 transition-all duration-200"
+            class="bg-white rounded-2xl border border-[#E4ECE9] overflow-hidden shadow-sm hover:border-[#00A896]/30 transition-all duration-200 flex flex-col justify-between group relative"
         >
           <div class="aspect-square w-full bg-[#F4F7F5] relative overflow-hidden border-b border-[#E4ECE9]">
             <img
@@ -149,10 +193,7 @@ onMounted(() => {
               📍 {{ ad.locationArea }}
             </span>
 
-            <!-- BOUTONS ACTIONS POSITIONNÉS EN ABSOLUTE (EN HAUT À DROITE) -->
             <div class="absolute top-2 right-2 flex items-center gap-1.5 z-10">
-
-              <!-- BOUTON CŒUR FAVORIS -->
               <button
                   @click.stop="toggleFavoriteAd(ad)"
                   class="bg-white/95 backdrop-blur-sm shadow-sm p-2 rounded-full transition-all duration-150 active:scale-90"
@@ -164,7 +205,6 @@ onMounted(() => {
                 </svg>
               </button>
 
-              <!-- BOUTON SUPPRIMER (UNIQUEMENT SI C'EST MON ANNONCE) -->
               <button
                   v-if="ad.userId === currentUserId"
                   @click.stop="deleteAd(ad.adId)"
@@ -180,10 +220,17 @@ onMounted(() => {
 
           <div class="p-3 flex flex-col justify-between flex-grow">
             <div>
-              <p class="text-base font-semibold text-[#1E2E2A] tracking-tight">
-                {{ ad.price }} $
-              </p>
-              <h2 class="text-xs text-[#5C756E] font-normal truncate mt-0.5">
+              <div class="flex items-center justify-between gap-1">
+                <p class="text-base font-semibold text-[#1E2E2A] tracking-tight">
+                  {{ ad.price }} $
+                </p>
+                <div v-if="ad.tags && ad.tags.length" class="flex gap-1 overflow-hidden max-w-[60%]">
+                  <span v-for="tName in ad.tags" :key="tName" class="text-[8px] bg-[#F4F7F5] text-[#5C756E] px-1.5 py-0.5 rounded-md truncate font-medium border border-[#E4ECE9]">
+                    {{ tName }}
+                  </span>
+                </div>
+              </div>
+              <h2 class="text-xs text-[#5C756E] font-normal truncate mt-1">
                 {{ ad.title }}
               </h2>
             </div>
@@ -207,8 +254,8 @@ onMounted(() => {
         </div>
       </div>
 
-      <div v-if="!loading && ads.length === 0" class="text-center py-20 text-[#5C756E]/50 italic text-xs">
-        Aucune annonce partagée sur le marché pour le moment.
+      <div v-if="!loading && filteredAds.length === 0" class="text-center py-20 text-[#5C756E]/50 italic text-xs bg-white rounded-2xl border border-[#E4ECE9] p-6 max-w-sm mx-auto">
+        Aucun équipement ne correspond à cette catégorie pour le moment.
       </div>
 
     </div>
@@ -227,3 +274,14 @@ onMounted(() => {
 
   </div>
 </template>
+
+<style scoped>
+/* Masquer la barre de défilement pour les filtres horizontaux */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+</style>
