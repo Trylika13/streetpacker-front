@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../api/axios'
 
@@ -7,7 +7,18 @@ const router = useRouter()
 const isSubmitting = ref(false)
 const errorMessage = ref('')
 
-// Formulaire épuré (le ContactLink est géré côté .NET désormais !)
+// Structure pour typer un tag
+interface Tag {
+  id: string;
+  name: string;
+  type: string;
+}
+
+// Liste des tags récupérés du Back et les IDs sélectionnés
+const availableTags = ref<Tag[]>([])
+const selectedTagIds = ref<string[]>([])
+
+// Formulaire épuré
 const form = ref({
   title: '',
   description: '',
@@ -15,10 +26,27 @@ const form = ref({
   locationArea: ''
 })
 
+const loadMarketplaceTags = async () => {
+  try {
+    const res = await api.get('/Ads/tags') // Mets l'URL exacte de ton contrôleur Ads
+    availableTags.value = res.data // Plus besoin de filtrer en JS, le Back donne le produit brut clean !
+  } catch (err) {
+    console.error("Erreur lors du chargement des tags marketplace :", err)
+  }
+}
+
+const toggleTagSelection = (tagId: string) => {
+  const index = selectedTagIds.value.indexOf(tagId)
+  if (index === -1) {
+    selectedTagIds.value.push(tagId)
+  } else {
+    selectedTagIds.value.splice(index, 1)
+  }
+}
+
 const handleSubmit = async () => {
-  // Petite validation rapide côté front
   if (!form.value.title || !form.value.description || !form.value.locationArea) {
-    errorMessage.value = 'Remplis tous les champs obligatoires, l\'ami ! 🎒'
+    errorMessage.value = 'Remplis tous les champs obligatoires, l\'ami ! '
     return
   }
 
@@ -31,15 +59,15 @@ const handleSubmit = async () => {
   errorMessage.value = ''
 
   try {
-    // Ton intercepteur injecte automatiquement le token JWT pour le POST
+    // 👑 On envoie maintenant le payload complet avec le tableau de TagIds mis à jour !
     await api.post('/Ads', {
       title: form.value.title,
       description: form.value.description,
       price: form.value.price,
-      locationArea: form.value.locationArea
+      locationArea: form.value.locationArea,
+      tagIds: selectedTagIds.value // 👑 Transmis proprement à ton CreateAdDto C# !
     })
 
-    // Si la création fonctionne, on redirige direct vers la grille du marketplace
     router.push('/marketplace')
   } catch (error: any) {
     console.error('Erreur lors de la création de l\'annonce:', error)
@@ -48,6 +76,10 @@ const handleSubmit = async () => {
     isSubmitting.value = false
   }
 }
+
+onMounted(() => {
+  loadMarketplaceTags()
+})
 </script>
 
 <template>
@@ -121,6 +153,26 @@ const handleSubmit = async () => {
               class="w-full bg-transparent text-sm text-[#1E2E2A] outline-none resize-none pt-1 placeholder-[#5C756E]/30"
               required
           ></textarea>
+        </div>
+
+        <div class="space-y-2 pt-1">
+          <label class="block text-[10px] uppercase tracking-[0.2em] text-[#5C756E] font-semibold">
+            Catégorie de matériel
+          </label>
+          <div class="flex flex-wrap gap-2">
+            <button
+                v-for="tag in availableTags"
+                :key="tag.id"
+                type="button"
+                @click="toggleTagSelection(tag.id)"
+                :class="selectedTagIds.includes(tag.id)
+        ? 'bg-[#00A896] text-white border-[#00A896]'
+        : 'bg-[#F4F7F5] text-[#5C756E] border-[#E4ECE9] hover:border-[#00A896]/40'"
+                class="px-3 py-1.5 border text-xs font-medium rounded-xl transition-all active:scale-95 flex items-center gap-1"
+            >
+              {{ tag.name }}
+            </button>
+          </div>
         </div>
 
         <div class="flex gap-3 pt-4">
