@@ -502,7 +502,7 @@ const copyCoords = async (lat, lng) => {
 const toggleFavoriteSpot = async (spot) => {
   try {
     const id = spot.spotsId || spot.id || spot.SpotsId;
-    const res = await api.post(`/spots/${id}/favorite`)
+    const res = await api.post(`/Spots/${id}/favorite`)
     spot.isFavorite = res.data.isFavorite
   } catch (err) {
     console.error("Erreur lors de la modification du spot favori :", err)
@@ -512,7 +512,7 @@ const toggleFavoriteSpot = async (spot) => {
 const voteSpot = async (spot, isUpvote) => {
   try {
     const id = spot.spotsId || spot.id || spot.Id || spot.SpotsId;
-    const res = await api.post(`/spots/${id}/vote?isUpvote=${isUpvote}`);
+    const res = await api.post(`/Spots/${id}/vote?isUpvote=${isUpvote}`);
     const newScore = res.data.freshnessScore ?? res.data.FreshnessScore;
 
     if (spot.freshnessScore !== undefined) spot.freshnessScore = newScore;
