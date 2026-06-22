@@ -1,12 +1,13 @@
 <template>
-  <div class="min-h-screen bg-[#F4F7F5] text-[#1E2E2A] pb-24 lg:pb-0 font-sans lg:flex lg:items-stretch">
+  <div class="min-h-screen bg-[#F4F7F5] text-[#1E2E2A] pb-24 lg:pb-0 font-sans lg:flex lg:items-stretch selection:bg-[#00A896]/10">
 
-    <!-- SIDEBAR LEFT (DESKTOP) -->
-    <div class="p-6 pb-6 pt-[calc(32px+env(safe-area-inset-top))] bg-white border-b lg:border-b-0 lg:border-r border-[#E4ECE9] relative lg:w-80 lg:shrink-0 lg:flex lg:flex-col lg:h-screen lg:sticky lg:top-0 lg:pt-16">
+    <!-- SIDEBAR LEFT (DESKTOP / MOBILE RESPONSIVE SÉCURISÉ) -->
+    <div class="p-6 pb-6 pt-[calc(24px+env(safe-area-inset-top))] bg-white border-b lg:border-b-0 lg:border-r border-[#E4ECE9] relative lg:w-80 lg:shrink-0 lg:flex lg:flex-col lg:h-screen lg:sticky lg:top-0 lg:pt-16">
       <div class="flex flex-col items-center mt-4 lg:mt-0 w-full">
+
         <!-- Bouton Retour -->
         <div class="absolute top-6 left-6">
-          <button @click="router.push('/dashboard')" class="group p-2 bg-[#F4F7F5] rounded-full text-[#5C756E]/60 hover:text-[#00A896] transition-colors flex items-center justify-center">
+          <button @click="router.push('/dashboard')" class="group p-2 bg-[#F4F7F5] rounded-full text-[#5C756E]/60 hover:text-[#00A896] transition-colors flex items-center justify-center" title="Tableau de bord">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
@@ -46,7 +47,6 @@
           <h3 class="text-[10px] uppercase tracking-[0.2em] text-[#5C756E] font-bold px-1 lg:hidden">Mon Activité</h3>
 
           <div class="grid grid-cols-2 lg:grid-cols-1 gap-3">
-            <!-- 🛠️ Remplacement des div/p par des spans sémantiques pour effacer les alertes de l'image_8d95c0.png -->
             <button @click="router.push('/profile/spots')" class="bg-white p-4 lg:p-6 rounded-2xl border border-[#E4ECE9] hover:border-[#00A896]/30 hover:-translate-y-0.5 hover:shadow-sm transition-all text-left active:scale-95 group relative overflow-hidden flex flex-col justify-between lg:h-32">
               <span class="block">
                 <span class="block text-2xl lg:text-3xl font-medium text-[#1E2E2A] group-hover:text-[#00A896] transition-colors">{{ stats.spots }}</span>
@@ -61,7 +61,6 @@
               </span>
             </button>
 
-            <!-- 🛠️ Idem ici pour l'inventaire des annonces -->
             <button @click="router.push('/profile/ads')" class="bg-white p-4 lg:p-6 rounded-2xl border border-[#E4ECE9] hover:border-[#00A896]/30 hover:-translate-y-0.5 hover:shadow-sm transition-all text-left active:scale-95 group relative overflow-hidden flex flex-col justify-between lg:h-32">
               <span class="block">
                 <span class="block text-2xl lg:text-3xl font-medium text-[#1E2E2A] group-hover:text-[#00A896] transition-colors">{{ stats.ads }}</span>
