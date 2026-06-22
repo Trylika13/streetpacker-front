@@ -67,6 +67,16 @@ const router = createRouter({
             name: 'my-favorites',
             component: () => import('../views/MyFavoritesView.vue'),
             meta: { requiresAuth: true } // 🔒 Route protégée
+        },
+        {
+            path: '/spots/:id',
+            name: 'SpotDetail',
+            component: () => import('@/views/SpotDetailView.vue')
+        },
+        {
+            path: '/marketplace/:id',
+            name: 'AdDetail',
+            component: () => import('@/views/AdDetailView.vue')
         }
     ]
 });
