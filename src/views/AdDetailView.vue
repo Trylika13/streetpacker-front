@@ -98,7 +98,6 @@ const router = useRouter()
 const loading = ref(true)
 const ad = ref<any>(null)
 
-// Récupération de l'ID utilisateur connecté au besoin
 const currentUserId = localStorage.getItem('userId')
 console.log('Utilisateur actuel connecté :', currentUserId)
 
@@ -115,14 +114,27 @@ const fetchAdDetail = async () => {
   }
 }
 
-const generateContactLink = (link: string, title: string) => {
-  if (!link) return '#'
-  const message = encodeURIComponent(`Salut ! Je suis intéressé par ton annonce "${title}" sur StreetPacker. Est-elle toujours disponible ?`)
+const generateContactLink = (contact: string, adTitle: string) => {
+  if (!contact) return '#'
 
-  if (link.includes('wa.me') && !link.includes('text=')) {
-    return link.includes('?') ? `${link}&text=${message}` : `${link}?text=${message}`
+  const message = `Salut ! Je suis intéressé par ton annonce "${adTitle}" sur StreetPacker. Est-elle toujours disponible ?`
+
+  // Cas 1 : C'est un Email
+  if (contact.includes('@')) {
+    return `mailto:${contact}?subject=${encodeURIComponent('StreetPacker - Annonce')}&body=${encodeURIComponent(message)}`
   }
-  return link
+
+  // Cas 2 : C'est déjà un lien WhatsApp formaté par le back
+  if (contact.includes('wa.me') || contact.includes('whatsapp.com')) {
+    if (!contact.includes('text=')) {
+      return contact.includes('?') ? `${contact}&text=${encodeURIComponent(message)}` : `${contact}?text=${encodeURIComponent(message)}`
+    }
+    return contact
+  }
+
+  // Cas 3 : C'est un numéro WhatsApp brut (ex: 32470123456) renvoyé par l'API
+  const cleanNumber = contact.replace(/[^0-9]/g, '')
+  return `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`
 }
 
 onMounted(() => {
