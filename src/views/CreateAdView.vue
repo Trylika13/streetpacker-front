@@ -2,10 +2,17 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../api/axios'
+// 📸 Import direct de tes helpers de média existants
+import { compressImage, uploadImage } from '../api/mediaService'
 
 const router = useRouter()
 const isSubmitting = ref(false)
 const errorMessage = ref('')
+
+// Variables pour la gestion de l'image (copiées de tes spots)
+const newAdImageUrl = ref('')
+const isUploadingAdImage = ref(false)
+const adImageInput = ref<HTMLInputElement | null>(null)
 
 // Structure pour typer un tag
 interface Tag {
@@ -28,11 +35,35 @@ const form = ref({
 
 const loadMarketplaceTags = async () => {
   try {
-    const res = await api.get('/Ads/tags') // Mets l'URL exacte de ton contrôleur Ads
-    availableTags.value = res.data // Plus besoin de filtrer en JS, le Back donne le produit brut clean !
+    const res = await api.get('/Ads/tags')
+    availableTags.value = res.data
   } catch (err) {
     console.error("Erreur lors du chargement des tags marketplace :", err)
   }
+}
+
+// 👑 GESTION DE L'IMAGE (Copiée/collée de ta logique Spots)
+const handleAdImageChange = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+
+  try {
+    isUploadingAdImage.value = true
+    const compressedFile = await compressImage(file)
+    // On récupère l'url renvoyée par ton contrôleur média .NET
+    const { url } = await uploadImage(compressedFile)
+    newAdImageUrl.value = url
+  } catch (err) {
+    console.error("Erreur ad image upload:", err)
+    errorMessage.value = "Impossible de charger la photo."
+  } finally {
+    isUploadingAdImage.value = false
+  }
+}
+
+const triggerAdImageUpload = () => {
+  adImageInput.value?.click()
 }
 
 const toggleTagSelection = (tagId: string) => {
@@ -59,13 +90,14 @@ const handleSubmit = async () => {
   errorMessage.value = ''
 
   try {
-    // 👑 On envoie maintenant le payload complet avec le tableau de TagIds mis à jour !
+    // 🚀 On balance tout au Back avec l'URL déjà récupérée à l'étape précédente
     await api.post('/Ads', {
       title: form.value.title,
       description: form.value.description,
       price: form.value.price,
       locationArea: form.value.locationArea,
-      tagIds: selectedTagIds.value // 👑 Transmis proprement à ton CreateAdDto C# !
+      imageUrl: newAdImageUrl.value || null, // 🔗 Transmis proprement à ton DTO C# (nullable)
+      tagIds: selectedTagIds.value
     })
 
     router.push('/marketplace')
@@ -110,6 +142,34 @@ onMounted(() => {
       </div>
 
       <form @submit.prevent="handleSubmit" class="space-y-5">
+
+        <div class="space-y-1">
+          <label class="block text-[10px] uppercase tracking-[0.2em] text-[#5C756E] font-semibold mb-1">Photo de l'équipement</label>
+          <div
+              @click="triggerAdImageUpload"
+              class="w-full h-28 lg:h-36 bg-[#F4F7F5] border border-dashed border-[#E4ECE9] rounded-xl flex items-center justify-center overflow-hidden cursor-pointer hover:border-[#00A896] transition-colors relative"
+          >
+            <img v-if="newAdImageUrl" :src="newAdImageUrl" class="w-full h-full object-cover" />
+            <div v-else class="flex flex-col items-center text-[#5C756E]/40">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+              </svg>
+              <span class="text-[9px] uppercase font-bold tracking-wider mt-1.5">Ajouter une photo</span>
+            </div>
+
+            <div v-if="isUploadingAdImage" class="absolute inset-0 bg-white/80 flex items-center justify-center">
+              <div class="w-5 h-5 border-2 border-[#00A896] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          </div>
+          <input
+              type="file"
+              ref="adImageInput"
+              class="hidden"
+              accept="image/*"
+              @change="handleAdImageChange"
+          />
+        </div>
 
         <div class="relative border-b border-[#E4ECE9] focus-within:border-[#00A896] transition-colors pb-1">
           <label class="block text-[10px] uppercase tracking-[0.2em] text-[#5C756E] font-semibold mb-1">Titre de l'annonce *</label>
@@ -166,8 +226,8 @@ onMounted(() => {
                 type="button"
                 @click="toggleTagSelection(tag.id)"
                 :class="selectedTagIds.includes(tag.id)
-        ? 'bg-[#00A896] text-white border-[#00A896]'
-        : 'bg-[#F4F7F5] text-[#5C756E] border-[#E4ECE9] hover:border-[#00A896]/40'"
+                  ? 'bg-[#00A896] text-white border-[#00A896]'
+                  : 'bg-[#F4F7F5] text-[#5C756E] border-[#E4ECE9] hover:border-[#00A896]/40'"
                 class="px-3 py-1.5 border text-xs font-medium rounded-xl transition-all active:scale-95 flex items-center gap-1"
             >
               {{ tag.name }}
@@ -178,7 +238,7 @@ onMounted(() => {
         <div class="flex gap-3 pt-4">
           <button
               type="submit"
-              :disabled="isSubmitting"
+              :disabled="isSubmitting || isUploadingAdImage"
               class="flex-1 h-12 bg-[#00A896] text-white font-medium rounded-xl text-sm active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all flex items-center justify-center"
           >
             <span v-if="isSubmitting" class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>

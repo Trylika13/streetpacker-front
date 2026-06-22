@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@maptiler/sdk": "^4.0.2",
+    "@supabase/supabase-js": "^2.108.2",
     "axios": "^1.15.2",
     "browser-image-compression": "^2.0.2",
     "pinia": "^3.0.4",
