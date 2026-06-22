@@ -257,9 +257,9 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import { config, GeolocateControl, Map, MapStyle, Marker } from '@maptiler/sdk';
-import api from '@/api/axios'
-import { useAuth } from '@/stores/auth';
-import { compressImage, uploadImage } from '@/api/mediaService';
+import api from '../api/axios'
+import { useAuth } from '../stores/auth';
+import { compressImage, uploadImage } from '../api/mediaService';
 import '@maptiler/sdk/dist/maptiler-sdk.css';
 
 const props = defineProps({

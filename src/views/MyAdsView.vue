@@ -2,6 +2,8 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../api/axios'
+// 📸 On importe tes utilitaires médias existants
+import { compressImage, uploadImage } from '../api/mediaService'
 
 interface Ad {
   adId: string | number;
@@ -10,17 +12,21 @@ interface Ad {
   price: number;
   locationArea: string;
   userId: string;
+  imageUrl?: string;
 }
 
 const router = useRouter()
 const myAds = ref<Ad[]>([])
 const loading = ref(true)
+const isSubmitting = ref(false)
 
-// Gestion du Modal de modification
+// Gestion du Modal de modification et des uploads
 const showEditModal = ref(false)
-const adToEdit = ref<Ad>({ adId: '', title: '', description: '', price: 0, locationArea: '', userId: '' })
+const isUploadingEditImage = ref(false)
+const editImageInput = ref<HTMLInputElement | null>(null)
+const adToEdit = ref<Ad>({ adId: '', title: '', description: '', price: 0, locationArea: '', userId: '', imageUrl: '' })
 
-// Charger uniquement les annonces de l'utilisateur connecté
+
 const fetchMyAds = async () => {
   try {
     loading.value = true
@@ -39,6 +45,29 @@ const openEditModal = (ad: Ad) => {
   showEditModal.value = true
 }
 
+// 👑 Gestion du changement de photo directement dans le modal (Identique aux Spots)
+const handleEditImageChange = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+
+  try {
+    isUploadingEditImage.value = true
+    const compressedFile = await compressImage(file)
+    const { url } = await uploadImage(compressedFile)
+    adToEdit.value.imageUrl = url // Assigne la nouvelle URL directement à l'objet en cours de modification
+  } catch (err) {
+    console.error("Erreur lors de l'upload de l'image modifiée:", err)
+    alert("Impossible de charger la photo.")
+  } finally {
+    isUploadingEditImage.value = false
+  }
+}
+
+const triggerEditImageUpload = () => {
+  editImageInput.value?.click()
+}
+
 // Sauvegarder les modifications (Appel PUT)
 const saveAd = async () => {
   if (adToEdit.value.price < 0) {
@@ -53,6 +82,7 @@ const saveAd = async () => {
       price: adToEdit.value.price,
       locationArea: adToEdit.value.locationArea,
       contactLink: (adToEdit.value as any).contactLink || '',
+      imageUrl: adToEdit.value.imageUrl || null, // 🔗 Transmis proprement à ton API .NET pour le update !
       isActive: true
     }
 
@@ -89,7 +119,6 @@ onMounted(fetchMyAds)
 <template>
   <div class="min-h-screen bg-[#F4F7F5] text-[#1E2E2A] pb-16 font-sans">
 
-    <!-- HEADER -->
     <div class="bg-white border-b border-[#E4ECE9] p-4 sticky top-0 z-50 shadow-[0_2px_15px_rgba(9,17,14,0.02)]">
       <div class="max-w-5xl mx-auto flex items-center justify-between">
         <div class="flex items-center gap-4">
@@ -106,7 +135,6 @@ onMounted(fetchMyAds)
       </div>
     </div>
 
-    <!-- MAIN CONTENT -->
     <div class="max-w-5xl mx-auto p-4 mt-6">
       <div v-if="loading" class="flex flex-col items-center justify-center py-24 space-y-3">
         <div class="w-6 h-6 border-2 border-[#00A896] border-t-transparent rounded-full animate-spin"></div>
@@ -122,12 +150,10 @@ onMounted(fetchMyAds)
           <p class="text-xs text-[#5C756E]/70 mt-1 max-w-xs mx-auto">Tu n'as pas encore mis d'équipement ou d'objets en vente sur le marketplace.</p>
         </div>
 
-        <!-- Grille de cartes de vente -->
         <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <div v-for="ad in myAds" :key="ad.adId" class="group bg-white rounded-[2rem] border border-[#E4ECE9] p-5 shadow-[0_8px_30px_rgba(9,17,14,0.015)] hover:shadow-[0_12px_40px_rgba(9,17,14,0.03)] hover:border-[#00A896]/20 transition-all flex flex-col justify-between h-48 relative overflow-hidden">
+          <div v-for="ad in myAds" :key="ad.adId" class="group bg-white rounded-[2rem] border border-[#E4ECE9] p-5 shadow-[0_8px_30px_rgba(9,17,14,0.015)] hover:shadow-[0_12px_40px_rgba(9,17,14,0.03)] hover:border-[#00A896]/20 transition-all flex flex-col justify-between h-56 relative overflow-hidden">
 
             <div>
-              <!-- Badge de prix supérieur & Actions -->
               <div class="flex items-start justify-between gap-2 mb-3">
                 <span class="text-xs font-bold text-[#00A896] bg-[#00A896]/10 px-2.5 py-1 rounded-xl">
                   {{ ad.price }} $
@@ -143,12 +169,17 @@ onMounted(fetchMyAds)
                 </div>
               </div>
 
-              <!-- Titre et description de l'objet -->
-              <h4 class="font-semibold text-sm text-[#1E2E2A] truncate group-hover:text-[#00A896] transition-colors mb-1">{{ ad.title }}</h4>
-              <p class="text-xs text-[#5C756E]/80 line-clamp-2 leading-relaxed">{{ ad.description }}</p>
+              <div class="flex gap-3">
+                <div v-if="ad.imageUrl" class="w-12 h-12 rounded-xl overflow-hidden border border-[#E4ECE9] flex-shrink-0">
+                  <img :src="ad.imageUrl" class="w-full h-full object-cover" />
+                </div>
+                <div class="overflow-hidden">
+                  <h4 class="font-semibold text-sm text-[#1E2E2A] truncate group-hover:text-[#00A896] transition-colors mb-1">{{ ad.title }}</h4>
+                  <p class="text-xs text-[#5C756E]/80 line-clamp-2 leading-relaxed">{{ ad.description }}</p>
+                </div>
+              </div>
             </div>
 
-            <!-- Pied de carte : Localisation -->
             <div class="pt-3 border-t border-[#E4ECE9]/60 flex items-center justify-between text-[11px] font-medium text-[#5C756E]/60">
               <span class="flex items-center gap-1 text-[#00A896]/90 font-semibold">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-[#00A896]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /></svg>
@@ -161,7 +192,6 @@ onMounted(fetchMyAds)
       </div>
     </div>
 
-    <!-- MODAL DE MODIFICATION ÉPURÉ -->
     <transition
         enter-active-class="transform transition ease-out duration-300"
         enter-from-class="translate-y-full lg:opacity-0 lg:scale-95 lg:translate-y-0"
@@ -171,12 +201,40 @@ onMounted(fetchMyAds)
         leave-to-class="translate-y-full lg:opacity-0 lg:scale-95 lg:translate-y-0"
     >
       <div v-if="showEditModal" class="fixed inset-0 z-[3000] bg-[#09110E]/40 backdrop-blur-xs flex items-end lg:items-center lg:justify-center pointer-events-none p-0 lg:p-4">
-        <div class="w-full max-w-md bg-white rounded-t-[2.5rem] lg:rounded-[2.5rem] p-6 pb-8 shadow-[0_-15px_50px_rgba(9,17,14,0.08)] lg:shadow-2xl pointer-events-auto mx-auto border border-[#E4ECE9]/50">
+        <div class="w-full max-w-md bg-white rounded-t-[2.5rem] lg:rounded-[2.5rem] p-6 pb-8 shadow-[0_-15px_50px_rgba(9,17,14,0.08)] lg:shadow-2xl pointer-events-auto mx-auto border border-[#E4ECE9]/50 overflow-y-auto max-h-[90vh] no-scrollbar">
           <div class="w-10 h-1 bg-[#E4ECE9] rounded-full mx-auto mb-6 lg:hidden"></div>
 
           <h3 class="text-base font-semibold text-[#1E2E2A] mb-5 tracking-tight">Détails de l'annonce</h3>
 
           <form @submit.prevent="saveAd" class="space-y-4">
+
+            <div class="space-y-1">
+              <label class="block text-[9px] uppercase tracking-wider text-[#5C756E]/70 font-bold mb-0.5">Photo de l'équipement</label>
+              <div
+                  @click="triggerEditImageUpload"
+                  class="w-full h-24 bg-[#F4F7F5] border border-dashed border-[#E4ECE9] rounded-xl flex items-center justify-center overflow-hidden cursor-pointer hover:border-[#00A896] transition-colors relative"
+              >
+                <img v-if="adToEdit.imageUrl" :src="adToEdit.imageUrl" class="w-full h-full object-cover" />
+                <div v-else class="flex flex-col items-center text-[#5C756E]/40">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+                  </svg>
+                  <span class="text-[8px] uppercase font-bold tracking-wider mt-1">Changer la photo</span>
+                </div>
+
+                <div v-if="isUploadingEditImage" class="absolute inset-0 bg-white/80 flex items-center justify-center">
+                  <div class="w-4 h-4 border-2 border-[#00A896] border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              </div>
+              <input
+                  type="file"
+                  ref="editImageInput"
+                  class="hidden"
+                  accept="image/*"
+                  @change="handleEditImageChange"
+              />
+            </div>
 
             <div class="bg-[#F4F7F5] rounded-xl px-4 py-2.5 border border-transparent focus-within:border-[#00A896]/20 focus-within:bg-white transition-all">
               <label class="block text-[9px] uppercase tracking-wider text-[#5C756E]/70 font-bold mb-0.5">Titre de l'objet</label>
@@ -200,9 +258,10 @@ onMounted(fetchMyAds)
               <textarea v-model="adToEdit.description" rows="3" class="w-full bg-transparent text-sm text-[#1E2E2A] outline-none resize-none leading-relaxed pt-0.5" required></textarea>
             </div>
 
-            <!-- Actions -->
             <div class="flex gap-2.5 pt-3">
-              <button type="submit" class="flex-1 h-11 bg-[#00A896] text-white font-medium rounded-xl text-xs tracking-wider uppercase active:scale-[0.98] transition-all shadow-sm shadow-[#00A896]/10">Enregistrer</button>
+              <button type="submit" :disabled="isSubmitting || isUploadingEditImage" class="flex-1 h-11 bg-[#00A896] text-white font-medium rounded-xl text-xs tracking-wider uppercase active:scale-[0.98] transition-all shadow-sm shadow-[#00A896]/10 disabled:opacity-50">
+                {{ isSubmitting ? 'Enregistrement...' : 'Enregistrer' }}
+              </button>
               <button type="button" @click="showEditModal = false" class="px-5 h-11 bg-[#F4F7F5] text-[#5C756E] rounded-xl text-xs font-medium tracking-wider uppercase border border-[#E4ECE9] active:scale-[0.98] transition-all">Annuler</button>
             </div>
           </form>
@@ -214,4 +273,11 @@ onMounted(fetchMyAds)
 </template>
 
 <style scoped>
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 </style>

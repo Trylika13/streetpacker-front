@@ -99,7 +99,7 @@ const fetchMoreAds = async () => {
     const res = await api.get(`/Ads?page=${currentPage.value}&pageSize=${pageSize.value}`)
     const newAds = res.data || []
 
-    if (newAds.length < pageSize.value) {
+    if (newAds.length === 0 || newAds.length < pageSize.value) {
       hasMoreAds.value = false
     }
 
@@ -125,7 +125,6 @@ const handleScroll = () => {
   const scrollTop = document.documentElement.scrollTop
   const clientHeight = document.documentElement.clientHeight
 
-  // Si on est à 50px ou moins du bas de la page, on déclenche le chargement
   if (scrollTop + clientHeight >= scrollHeight - 50) {
     fetchMoreAds()
   }
@@ -193,13 +192,6 @@ onMounted(() => {
             </p>
           </div>
         </div>
-
-        <button class="p-2 text-[#5C756E]/60 hover:text-[#00A896] transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </button>
-
       </div>
     </div>
 
@@ -253,7 +245,7 @@ onMounted(() => {
           <!-- IMAGE ET BOUTONS ACTIONS FLOTTANTS -->
           <div class="aspect-square w-full bg-[#F4F7F5] relative overflow-hidden border-b border-[#E4ECE9]">
             <img
-                src="https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?q=80&w=600&auto=format&fit=crop"
+                :src="ad.imageUrl || ad.ImageUrl || 'https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?q=80&w=600&auto=format&fit=crop'"
                 alt="Ad image"
                 class="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
             />
