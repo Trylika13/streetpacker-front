@@ -46,6 +46,22 @@ const removeAdFavorite = async (adId: string) => {
   }
 }
 
+const goToSpotDetail = (spot: any) => {
+  // 👑 On cherche l'ID peu importe sa casse (.NET, DTO ou Postgres)
+  const id = spot.spotsId || spot.spotId || spot.id || spot.Id;
+
+  if (!id) {
+    console.error("Impossible de trouver l'ID du spot dans l'objet :", spot);
+    return;
+  }
+
+  router.push(`/spots/${id}`);
+}
+
+const goToAdDetail = (adId: string) => {
+  router.push(`/marketplace/${adId}`)
+}
+
 const generateContactLink = (contact: string, adTitle: string) => {
   if (!contact) return '#'
   const message = `Bonjour, je viens de voir ton annonce pour "${adTitle}" dans mes favoris StreetPacker...`
@@ -118,8 +134,10 @@ onMounted(fetchFavorites)
           <div v-if="favoriteSpots.length === 0" class="text-center py-12 sm:col-span-2 text-[#5C756E]/40 italic text-xs">Aucun spot mis en favori pour l'instant.</div>
 
           <div v-for="spot in favoriteSpots" :key="spot.spotsId" class="bg-white p-4 rounded-2xl border border-[#E4ECE9] flex items-center justify-between gap-4 shadow-sm hover:border-[#00A896]/20 transition-colors">
-            <div class="min-w-0 flex-1">
-              <h4 class="font-medium text-sm text-[#1E2E2A] truncate">{{ spot.title }}</h4>
+            <div @click="goToSpotDetail(spot)" class="min-w-0 flex-1 cursor-pointer group">
+              <h4 class="font-medium text-sm text-[#1E2E2A] group-hover:text-[#00A896] transition-colors truncate">
+                {{ spot.title }}
+              </h4>
               <p class="text-xs text-[#5C756E]/70 truncate mt-0.5">{{ spot.description }}</p>
             </div>
             <button @click="removeSpotFavorite(spot.spotsId)" class="p-2 text-[#FF6B6B] hover:bg-red-50 rounded-full transition-colors" title="Retirer des favoris">
@@ -133,11 +151,13 @@ onMounted(fetchFavorites)
 
           <div v-for="ad in favoriteAds" :key="ad.adId" class="bg-white p-4 rounded-2xl border border-[#E4ECE9] flex items-center justify-between gap-4 shadow-sm hover:border-[#00A896]/20 transition-colors">
             <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-2">
-                <span class="text-[10px] font-bold text-[#00A896] bg-[#00A896]/10 px-1.5 py-0.5 rounded">{{ ad.price }} $</span>
-                <h4 class="font-medium text-sm text-[#1E2E2A] truncate">{{ ad.title }}</h4>
+              <div @click="goToAdDetail(ad.adId)" class="min-w-0 flex-1 cursor-pointer group">
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-bold text-[#00A896] bg-[#00A896]/10 px-1.5 py-0.5 rounded">{{ ad.price }} $</span>
+                  <h4 class="font-medium text-sm text-[#1E2E2A] group-hover:text-[#00A896] transition-colors truncate">{{ ad.title }}</h4>
+                </div>
+                <p class="text-xs text-[#5C756E]/70 truncate mt-1">📍 {{ ad.locationArea }}</p>
               </div>
-              <p class="text-xs text-[#5C756E]/70 truncate mt-1">📍 {{ ad.locationArea }}</p>
 
               <a :href="generateContactLink(ad.contactLink, ad.title)" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-medium text-[#00A896] mt-2 hover:underline">
                 Contacter le vendeur
