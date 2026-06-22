@@ -5,8 +5,8 @@
     <div class="p-6 pb-6 pt-[calc(24px+env(safe-area-inset-top))] bg-white border-b lg:border-b-0 lg:border-r border-[#E4ECE9] relative lg:w-80 lg:shrink-0 lg:flex lg:flex-col lg:h-screen lg:sticky lg:top-0 lg:pt-16">
       <div class="flex flex-col items-center mt-4 lg:mt-0 w-full">
 
-        <!-- Bouton Retour -->
-        <div class="absolute top-6 left-6">
+        <!-- 🛠️ CORRECTION DU BOUTON RETOUR : Aligné dynamiquement sur la zone sécurisée de l'encoche -->
+        <div class="absolute top-[calc(16px+env(safe-area-inset-top))] lg:top-6 left-6">
           <button @click="router.push('/dashboard')" class="group p-2 bg-[#F4F7F5] rounded-full text-[#5C756E]/60 hover:text-[#00A896] transition-colors flex items-center justify-center" title="Tableau de bord">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
