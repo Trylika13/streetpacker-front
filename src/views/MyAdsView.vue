@@ -1,125 +1,7 @@
-<script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import api from '../api/axios'
-// 📸 On importe tes utilitaires médias existants
-import { compressImage, uploadImage } from '../api/mediaService'
-
-interface Ad {
-  adId: string | number;
-  title: string;
-  description: string;
-  price: number;
-  locationArea: string;
-  userId: string;
-  imageUrl?: string;
-}
-
-const router = useRouter()
-const myAds = ref<Ad[]>([])
-const loading = ref(true)
-const isSubmitting = ref(false)
-
-// Gestion du Modal de modification et des uploads
-const showEditModal = ref(false)
-const isUploadingEditImage = ref(false)
-const editImageInput = ref<HTMLInputElement | null>(null)
-const adToEdit = ref<Ad>({ adId: '', title: '', description: '', price: 0, locationArea: '', userId: '', imageUrl: '' })
-
-
-const fetchMyAds = async () => {
-  try {
-    loading.value = true
-    const res = await api.get('/Ads/my-ads')
-    myAds.value = res.data || []
-  } catch (err) {
-    console.error('Erreur lors de la récupération de tes annonces:', err)
-  } finally {
-    loading.value = false
-  }
-}
-
-// Ouvrir le modal avec les données pré-remplies
-const openEditModal = (ad: Ad) => {
-  adToEdit.value = { ...ad }
-  showEditModal.value = true
-}
-
-// 👑 Gestion du changement de photo directement dans le modal (Identique aux Spots)
-const handleEditImageChange = async (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  if (!file) return
-
-  try {
-    isUploadingEditImage.value = true
-    const compressedFile = await compressImage(file)
-    const { url } = await uploadImage(compressedFile)
-    adToEdit.value.imageUrl = url // Assigne la nouvelle URL directement à l'objet en cours de modification
-  } catch (err) {
-    console.error("Erreur lors de l'upload de l'image modifiée:", err)
-    alert("Impossible de charger la photo.")
-  } finally {
-    isUploadingEditImage.value = false
-  }
-}
-
-const triggerEditImageUpload = () => {
-  editImageInput.value?.click()
-}
-
-// Sauvegarder les modifications (Appel PUT)
-const saveAd = async () => {
-  if (adToEdit.value.price < 0) {
-    alert('Le prix ne peut pas être négatif, l\'ami !')
-    return
-  }
-
-  try {
-    const payload = {
-      title: adToEdit.value.title,
-      description: adToEdit.value.description,
-      price: adToEdit.value.price,
-      locationArea: adToEdit.value.locationArea,
-      contactLink: (adToEdit.value as any).contactLink || '',
-      imageUrl: adToEdit.value.imageUrl || null, // 🔗 Transmis proprement à ton API .NET pour le update !
-      isActive: true
-    }
-
-    await api.put('/Ads/' + adToEdit.value.adId, payload)
-
-    // Mise à jour de la liste locale
-    const index = myAds.value.findIndex(a => a.adId === adToEdit.value.adId)
-    if (index !== -1) {
-      myAds.value[index] = { ...adToEdit.value }
-    }
-
-    showEditModal.value = false
-  } catch (error) {
-    console.error('Erreur lors de la modification de l\'annonce:', error)
-    alert('Impossible de modifier l\'annonce.')
-  }
-}
-
-// Supprimer une annonce
-const deleteAd = async (adId: string | number) => {
-  if (!confirm('Es-tu sûr de vouloir retirer cette annonce du marché ? 🎒')) return
-
-  try {
-    await api.delete('/Ads/' + adId)
-    myAds.value = myAds.value.filter(ad => ad.adId !== adId)
-  } catch (error) {
-    console.error('Erreur lors de la suppression de l\'annonce:', error)
-  }
-}
-
-onMounted(fetchMyAds)
-</script>
-
 <template>
-  <div class="min-h-screen bg-[#F4F7F5] text-[#1E2E2A] pb-16 font-sans">
+  <div class="min-h-screen bg-[#F4F7F5] text-[#1E2E2A] pb-16 font-sans selection:bg-[#00A896]/10">
 
-    <div class="bg-white border-b border-[#E4ECE9] p-4 sticky top-0 z-50 shadow-[0_2px_15px_rgba(9,17,14,0.02)]">
+    <div class="bg-white border-b border-[#E4ECE9] pb-4 pt-[calc(12px+env(safe-area-inset-top))] px-4 sticky top-0 z-50 shadow-[0_2px_15px_rgba(9,17,14,0.02)] backdrop-blur-md bg-white/90">
       <div class="max-w-5xl mx-auto flex items-center justify-between">
         <div class="flex items-center gap-4">
           <button @click="router.push('/profile')" class="group p-2.5 bg-[#F4F7F5] rounded-full text-[#5C756E]/60 hover:text-[#00A896] hover:bg-[#00A896]/5 transition-all flex items-center justify-center">
@@ -144,7 +26,9 @@ onMounted(fetchMyAds)
       <div v-else>
         <div v-if="myAds.length === 0" class="text-center py-20 bg-white rounded-3xl border border-[#E4ECE9] p-8 max-w-md mx-auto">
           <div class="w-12 h-12 bg-[#F4F7F5] rounded-full flex items-center justify-center text-[#5C756E]/40 mx-auto mb-3">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
           </div>
           <p class="text-sm font-medium text-[#1E2E2A]">Aucune annonce en ligne</p>
           <p class="text-xs text-[#5C756E]/70 mt-1 max-w-xs mx-auto">Tu n'as pas encore mis d'équipement ou d'objets en vente sur le marketplace.</p>
@@ -171,7 +55,7 @@ onMounted(fetchMyAds)
 
               <div class="flex gap-3">
                 <div v-if="ad.imageUrl" class="w-12 h-12 rounded-xl overflow-hidden border border-[#E4ECE9] flex-shrink-0">
-                  <img :src="ad.imageUrl" class="w-full h-full object-cover" />
+                  <img :src="ad.imageUrl" class="w-full h-full object-cover" alt="Annonce" />
                 </div>
                 <div class="overflow-hidden">
                   <h4 class="font-semibold text-sm text-[#1E2E2A] truncate group-hover:text-[#00A896] transition-colors mb-1">{{ ad.title }}</h4>
@@ -182,7 +66,9 @@ onMounted(fetchMyAds)
 
             <div class="pt-3 border-t border-[#E4ECE9]/60 flex items-center justify-between text-[11px] font-medium text-[#5C756E]/60">
               <span class="flex items-center gap-1 text-[#00A896]/90 font-semibold">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-[#00A896]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-[#00A896]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                </svg>
                 {{ ad.locationArea }}
               </span>
             </div>
@@ -214,7 +100,7 @@ onMounted(fetchMyAds)
                   @click="triggerEditImageUpload"
                   class="w-full h-24 bg-[#F4F7F5] border border-dashed border-[#E4ECE9] rounded-xl flex items-center justify-center overflow-hidden cursor-pointer hover:border-[#00A896] transition-colors relative"
               >
-                <img v-if="adToEdit.imageUrl" :src="adToEdit.imageUrl" class="w-full h-full object-cover" />
+                <img v-if="adToEdit.imageUrl" :src="adToEdit.imageUrl" class="w-full h-full object-cover" alt="Preview" />
                 <div v-else class="flex flex-col items-center text-[#5C756E]/40">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
@@ -271,6 +157,119 @@ onMounted(fetchMyAds)
 
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import api from '../api/axios'
+import { compressImage, uploadImage } from '../api/mediaService'
+
+interface Ad {
+  adId: string | number;
+  title: string;
+  description: string;
+  price: number;
+  locationArea: string;
+  userId: string;
+  imageUrl?: string;
+}
+
+const router = useRouter()
+const myAds = ref<Ad[]>([])
+const loading = ref(true)
+const isSubmitting = ref(false)
+
+const showEditModal = ref(false)
+const isUploadingEditImage = ref(false)
+const editImageInput = ref<HTMLInputElement | null>(null)
+const adToEdit = ref<Ad>({ adId: '', title: '', description: '', price: 0, locationArea: '', userId: '', imageUrl: '' })
+
+const fetchMyAds = async () => {
+  try {
+    loading.value = true
+    const res = await api.get('/Ads/my-ads')
+    myAds.value = res.data || []
+  } catch (err) {
+    console.error('Erreur lors de la récupération de tes annonces:', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+const openEditModal = (ad: Ad) => {
+  adToEdit.value = { ...ad }
+  showEditModal.value = true
+}
+
+const handleEditImageChange = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+
+  try {
+    isUploadingEditImage.value = true
+    const compressedFile = await compressImage(file)
+    const { url } = await uploadImage(compressedFile)
+    adToEdit.value.imageUrl = url
+  } catch (err) {
+    console.error("Erreur lors de l'upload de l'image modifiée:", err)
+    alert("Impossible de charger la photo.")
+  } finally {
+    isUploadingEditImage.value = false
+  }
+}
+
+const triggerEditImageUpload = () => {
+  editImageInput.value?.click()
+}
+
+const saveAd = async () => {
+  if (adToEdit.value.price < 0) {
+    alert('Le prix ne peut pas être négatif.')
+    return
+  }
+
+  try {
+    isSubmitting.value = true
+    const payload = {
+      title: adToEdit.value.title,
+      description: adToEdit.value.description,
+      price: adToEdit.value.price,
+      locationArea: adToEdit.value.locationArea,
+      contactLink: (adToEdit.value as any).contactLink || '',
+      imageUrl: adToEdit.value.imageUrl || null,
+      isActive: true
+    }
+
+    await api.put('/Ads/' + adToEdit.value.adId, payload)
+
+    const index = myAds.value.findIndex(a => a.adId === adToEdit.value.adId)
+    if (index !== -1) {
+      myAds.value[index] = { ...adToEdit.value }
+    }
+
+    showEditModal.value = false
+  } catch (error) {
+    console.error('Erreur lors de la modification de l\'annonce:', error)
+    alert('Impossible de modifier l\'annonce.')
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+const deleteAd = async (adId: string | number) => {
+  if (!confirm('Es-tu sûr de vouloir retirer cette annonce du marché ?')) return
+
+  try {
+    await api.delete('/Ads/' + adId)
+    myAds.value = myAds.value.filter(ad => ad.adId !== adId)
+  } catch (error) {
+    console.error('Erreur lors de la suppression de l\'annonce:', error)
+  }
+}
+
+onMounted(fetchMyAds)
+</script>
 
 <style scoped>
 .no-scrollbar::-webkit-scrollbar {

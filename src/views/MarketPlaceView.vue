@@ -57,7 +57,6 @@ const fetchInitialAdsAndFavorites = async () => {
     currentPage.value = 1
     hasMoreAds.value = true
 
-    // On récupère les favoris et la première page d'annonces
     const [adsResponse, favsResponse] = await Promise.all([
       api.get(`/Ads?page=${currentPage.value}&pageSize=${pageSize.value}`),
       api.get('/Ads/favorites').catch(() => ({ data: [] }))
@@ -69,7 +68,6 @@ const fetchInitialAdsAndFavorites = async () => {
 
     const fetchedAds = adsResponse.data || []
 
-    // Si l'API renvoie moins d'annonces que le pageSize, c'est qu'on a tout récupéré
     if (fetchedAds.length < pageSize.value) {
       hasMoreAds.value = false
     }
@@ -89,7 +87,6 @@ const fetchInitialAdsAndFavorites = async () => {
 
 // Charger le paquet d'annonces suivant (Page 2, 3, etc.)
 const fetchMoreAds = async () => {
-  // On bloque si un chargement est déjà en cours ou s'il n'y a plus rien à récupérer
   if (loadingMore.value || !hasMoreAds.value || loading.value) return
 
   try {
@@ -103,7 +100,6 @@ const fetchMoreAds = async () => {
       hasMoreAds.value = false
     }
 
-    // On ajoute les nouvelles annonces à la suite du tableau existant
     const mappedNewAds = newAds.map(ad => ({
       ...ad,
       isFavorite: favoriteAdIds.value.has(ad.adId)
@@ -113,7 +109,7 @@ const fetchMoreAds = async () => {
 
   } catch (error) {
     console.error('Erreur lors du chargement des annonces suivantes:', error)
-    currentPage.value-- // Reset la page en cas d'échec
+    currentPage.value--
   } finally {
     loadingMore.value = false
   }
@@ -140,7 +136,7 @@ const toggleFavoriteAd = async (ad) => {
 }
 
 const deleteAd = async (adId) => {
-  if (!confirm('Es-tu sûr de vouloir retirer cette annonce du marketplace ?')) return
+  if (!confirm('Confirmer la suppression définitive de cette annonce du marketplace ?')) return
 
   try {
     await api.delete(`/Ads/${adId}`)
@@ -151,7 +147,6 @@ const deleteAd = async (adId) => {
   }
 }
 
-// Si l'utilisateur change de tag de filtre, on réinitialise pour éviter les conflits de listes complètes
 watch(selectedTag, () => {
   fetchInitialAdsAndFavorites()
 })
@@ -159,16 +154,14 @@ watch(selectedTag, () => {
 onMounted(() => {
   fetchInitialAdsAndFavorites()
   loadMarketplaceTags()
-
-  // On écoute le scroll du navigateur
   window.addEventListener('scroll', handleScroll)
 })
 </script>
+
 <template>
   <div class="min-h-screen bg-[#F4F7F5] text-[#1E2E2A] pb-24 lg:pb-8 font-sans selection:bg-[#00A896]/20 relative">
 
-    <!-- HEADER DE L'APPLICATION -->
-    <div class="bg-white border-b border-[#E4ECE9] p-4 pt-6 lg:pt-8 sticky top-0 z-50 shadow-sm backdrop-blur-md bg-white/90">
+    <div class="bg-white border-b border-[#E4ECE9] pb-4 pt-[calc(12px+env(safe-area-inset-top))] px-4 sticky top-0 z-50 shadow-sm backdrop-blur-md bg-white/90">
       <div class="max-w-7xl mx-auto flex items-center justify-between px-2">
 
         <div class="flex items-center gap-4">
@@ -185,17 +178,13 @@ onMounted(() => {
           <div>
             <h1 class="text-xl lg:text-2xl font-medium tracking-tight text-[#1E2E2A]">Marketplace</h1>
             <p class="text-[9px] text-[#00A896] font-bold uppercase tracking-widest mt-0.5 flex items-center gap-1">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-              </svg>
-              Matériel & Bons plans de nomades
+              Matériel et bons plans
             </p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- FILTRES HORIZONTAUX (TAGS) -->
     <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 mt-4">
       <div class="flex gap-2 overflow-x-auto no-scrollbar py-1">
         <button
@@ -218,10 +207,8 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- GRILLE DES ANNONCES -->
     <div class="max-w-7xl mx-auto p-3 sm:p-6 mt-1">
 
-      <!-- ÉTAT DE CHARGEMENT -->
       <div v-if="loading" class="text-center py-20 text-sm font-medium text-[#5C756E]/60 italic flex flex-col items-center justify-center gap-3">
         <svg class="animate-spin h-5 w-5 text-[#00A896]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -230,23 +217,21 @@ onMounted(() => {
         <span>Recherche des meilleures offres en cours...</span>
       </div>
 
-      <!-- ÉTAT D'ERREUR -->
       <div v-if="errorMessage" class="bg-red-50 border border-red-100 text-[#FF6B6B] p-4 rounded-2xl text-xs max-w-md mx-auto text-center shadow-sm">
         {{ errorMessage }}
       </div>
 
-      <!-- BOUCLE SUR LES ANNONCES FILTRÉES -->
-      <div v-if="!loading && filteredAds.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">        <div
+      <div v-if="!loading && filteredAds.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div
             v-for="ad in filteredAds"
             :key="ad.adId"
             @click="goToAdDetail(ad)"
             class="bg-white rounded-2xl border border-[#E4ECE9] overflow-hidden shadow-sm hover:border-[#00A896]/30 transition-all duration-200 flex flex-col justify-between group relative cursor-pointer"
         >
-          <!-- IMAGE ET BOUTONS ACTIONS FLOTTANTS -->
-          <div class="aspect-square w-full bg-[#F4F7F5] relative overflow-hidden border-b border-[#E4ECE9]">
+          <div class="aspect-square lg:aspect-[4/3] w-full bg-[#F4F7F5] relative overflow-hidden border-b border-[#E4ECE9]">
             <img
                 :src="ad.imageUrl || ad.ImageUrl || 'https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?q=80&w=600&auto=format&fit=crop'"
-                alt="Ad image"
+                alt="Ad visual"
                 class="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
             />
 
@@ -283,18 +268,12 @@ onMounted(() => {
             </div>
           </div>
 
-
-
           <div class="p-4 flex flex-col justify-between flex-grow bg-white">
-
-            <!-- BLOC HAUT : Titre à gauche, Tag à droite au même niveau -->
             <div class="flex items-start justify-between gap-3">
-              <!-- Le Titre (prend la place restante) -->
               <h2 class="text-base font-bold text-[#1E2E2A] tracking-tight line-clamp-2 leading-tight flex-1">
                 {{ ad.title }}
               </h2>
 
-              <!-- Le Tag (calé à droite, ne shrink pas) -->
               <span v-if="ad.tags && ad.tags.length" class="text-[9px] uppercase tracking-wider text-[#5C756E]/60 font-bold whitespace-nowrap mt-1">
                 {{ ad.tags[0] }}
               </span>
@@ -303,35 +282,29 @@ onMounted(() => {
               </span>
             </div>
 
-            <!-- BLOC BAS : Prix pur et action -->
             <div class="mt-5 flex justify-between items-center">
-              <!-- Prix technique style badge -->
               <span class="text-xs font-bold text-[#1E2E2A] bg-[#F4F7F5] border border-[#E4ECE9] px-2.5 py-1 rounded-lg">
                 {{ ad.price }} $
               </span>
 
-              <!-- Flèche fine style Apple -->
               <div class="text-[#00A896] group-hover:translate-x-0.5 transition-transform duration-200">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </div>
             </div>
-
-          </div>        </div>
+          </div>
+        </div>
       </div>
 
-      <!-- AUCUN RÉSULTAT -->
       <div v-if="!loading && filteredAds.length === 0" class="text-center py-16 text-[#5C756E]/50 italic text-xs bg-white rounded-2xl border border-[#E4ECE9] p-6 max-w-sm mx-auto flex flex-col items-center gap-3 shadow-sm">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#5C756E]/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0a2 2 0 01-2 2H6a2 2 0 01-2-2m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
         </svg>
         <span>Aucun équipement ne correspond à cette catégorie pour le moment.</span>
       </div>
-
     </div>
 
-    <!-- BOUTON FLOTTANT AJOUTER ANNONCE -->
     <div class="fixed bottom-6 right-6 lg:bottom-10 lg:right-10 z-[2000]">
       <button
           @click="router.push('/create-ad')"
@@ -343,7 +316,7 @@ onMounted(() => {
         </svg>
       </button>
     </div>
-    <!-- PETIT SPINNER DE CHARGEMENT EN BAS DE PAGE (INFINITE SCROLL) -->
+
     <div v-if="loadingMore" class="w-full flex justify-center py-6">
       <svg class="animate-spin h-5 w-5 text-[#00A896]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -353,6 +326,7 @@ onMounted(() => {
 
   </div>
 </template>
+
 <style scoped>
 .no-scrollbar::-webkit-scrollbar {
   display: none;

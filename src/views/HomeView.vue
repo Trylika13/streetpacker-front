@@ -13,8 +13,9 @@ const router = useRouter();
     <div class="w-full max-w-5xl px-6 py-12 flex flex-col lg:flex-row lg:items-center justify-between gap-16 z-10">
 
       <div class="flex flex-col items-start max-w-sm">
-        <div class="flex items-center gap-3 mb-6 opacity-90">
-          <img :src="geckoLogo" alt="StreetPacker Gecko" class="w-8 h-8 object-contain" />
+        <!-- 🦎 LOGO AGRANDI : Passage en w-14 h-14 pour asseoir l'identité visuelle de StreetPacker -->
+        <div class="flex items-center gap-3 mb-6 opacity-95">
+          <img :src="geckoLogo" alt="StreetPacker Gecko" class="w-14 h-14 object-contain" />
         </div>
 
         <h1 class="text-5xl lg:text-7xl font-light tracking-tight text-[#1E2E2A] leading-none mb-6">
@@ -22,7 +23,8 @@ const router = useRouter();
         </h1>
 
         <p class="text-sm text-[#5C756E] leading-relaxed">
-          Partage tes spots cachés, localise les points d'eau essentiels et voyage hors des sentiers battus. Conçu par et pour les backpackers.        </p>
+          Partage tes spots cachés, localise les points d'eau essentiels et voyage hors des sentiers battus. Conçu par et pour les backpackers.
+        </p>
       </div>
 
       <div class="w-full max-w-sm bg-white border border-[#E4ECE9] p-8 lg:p-10 rounded-[2rem] shadow-sm flex flex-col gap-4">
@@ -55,7 +57,6 @@ const router = useRouter();
 </template>
 
 <style scoped>
-/* Rendu ultra-propre sur les écrans Retina/MacBook */
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
