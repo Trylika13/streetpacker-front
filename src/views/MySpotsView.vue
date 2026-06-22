@@ -36,7 +36,7 @@ const fetchMySpots = async () => {
 }
 
 const deleteSpot = async (id: string | number) => {
-  if (!confirm('Sûr de vouloir supprimer ce spot de la carte ? 🌲')) return
+  if (!confirm('Confirmer la suppression définitive de ce lieu de la carte ?')) return
 
   try {
     await api.delete('Spots/' + id)
@@ -102,9 +102,9 @@ onMounted(fetchMySpots)
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#F4F7F5] text-[#1E2E2A] pb-16 font-sans">
+  <div class="min-h-screen bg-[#F4F7F5] text-[#1E2E2A] pb-16 font-sans selection:bg-[#00A896]/10">
 
-    <div class="bg-white border-b border-[#E4ECE9] p-4 sticky top-0 z-50 shadow-[0_2px_15px_rgba(9,17,14,0.02)]">
+    <div class="bg-white border-b border-[#E4ECE9] pb-4 pt-[calc(12px+env(safe-area-inset-top))] px-4 sticky top-0 z-50 shadow-[0_2px_15px_rgba(9,17,14,0.02)] backdrop-blur-md bg-white/90">
       <div class="max-w-5xl mx-auto flex items-center justify-between">
         <div class="flex items-center gap-4">
           <button @click="router.push('/profile')" class="group p-2.5 bg-[#F4F7F5] rounded-full text-[#5C756E]/60 hover:text-[#00A896] hover:bg-[#00A896]/5 transition-all flex items-center justify-center">
@@ -129,7 +129,10 @@ onMounted(fetchMySpots)
       <div v-else>
         <div v-if="mySpots.length === 0" class="text-center py-20 bg-white rounded-3xl border border-[#E4ECE9] p-8 max-w-md mx-auto">
           <div class="w-12 h-12 bg-[#F4F7F5] rounded-full flex items-center justify-center text-[#5C756E]/40 mx-auto mb-3">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
           </div>
           <p class="text-sm font-medium text-[#1E2E2A]">Aucun spot partagé</p>
           <p class="text-xs text-[#5C756E]/70 mt-1 max-w-xs mx-auto">Tes découvertes apparaîtront ici dès que tu en ajouteras sur la carte globale.</p>
@@ -139,9 +142,11 @@ onMounted(fetchMySpots)
           <div v-for="spot in mySpots" :key="spot.id" class="group bg-white rounded-[2rem] border border-[#E4ECE9] overflow-hidden shadow-[0_8px_30px_rgba(9,17,14,0.015)] hover:shadow-[0_12px_40px_rgba(9,17,14,0.04)] hover:border-[#00A896]/20 transition-all flex flex-col h-72 relative">
 
             <div class="h-44 bg-[#E4ECE9] relative overflow-hidden shrink-0">
-              <img v-if="spot.imageUrl || spot.ImageUrl" :src="spot.imageUrl || spot.ImageUrl" alt="Spot" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+              <img v-if="spot.imageUrl || spot.ImageUrl" :src="spot.imageUrl || spot.ImageUrl" alt="Spot visual" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
               <div v-else class="w-full h-full bg-gradient-to-br from-[#E4ECE9] to-[#F4F7F5] flex items-center justify-center text-[#5C756E]/30">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
               </div>
               <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60"></div>
 
@@ -175,18 +180,20 @@ onMounted(fetchMySpots)
         leave-to-class="translate-y-full lg:opacity-0 lg:scale-95 lg:translate-y-0"
     >
       <div v-if="showEditModal" class="fixed inset-0 z-[3000] bg-[#09110E]/40 backdrop-blur-xs flex items-end lg:items-center lg:justify-center pointer-events-none p-0 lg:p-4">
-        <div class="w-full max-w-md bg-white rounded-t-[2.5rem] lg:rounded-[2.5rem] p-6 pb-8 shadow-[0_-15px_50px_rgba(9,17,14,0.08)] lg:shadow-2xl pointer-events-auto mx-auto border border-[#E4ECE9]/50">
+        <div class="w-full max-w-md bg-white rounded-t-[2.5rem] lg:rounded-[2.5rem] p-6 pb-8 shadow-[0_-15px_50px_rgba(9,17,14,0.08)] lg:shadow-2xl pointer-events-auto mx-auto border border-[#E4ECE9]/50 overflow-y-auto max-h-[90vh] no-scrollbar">
           <div class="w-10 h-1 bg-[#E4ECE9] rounded-full mx-auto mb-6 lg:hidden"></div>
 
           <h3 class="text-base font-semibold text-[#1E2E2A] mb-5 tracking-tight">Détails du spot sauvage</h3>
 
           <div class="space-y-6">
             <div class="h-36 w-full bg-[#F4F7F5] rounded-2xl relative overflow-hidden group/modal border border-[#E4ECE9] mb-2 flex items-center justify-center">
-              <img v-if="spotToEdit.imageUrl" :src="spotToEdit.imageUrl" class="w-full h-full object-cover" />
+              <img v-if="spotToEdit.imageUrl" :src="spotToEdit.imageUrl" class="w-full h-full object-cover" alt="Preview" />
               <div v-else class="text-xs text-[#5C756E]/40 italic">Aucun visuel associé</div>
 
               <button @click="triggerSpotImageUpload" type="button" class="absolute bottom-3 right-3 px-3 h-8 bg-white/90 backdrop-blur-md hover:bg-white text-xs font-medium text-[#1E2E2A] rounded-xl shadow-sm transition-all flex items-center gap-1.5">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-[#5C756E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-[#5C756E]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                </svg>
                 {{ isUploadingSpotImage ? 'Traitement...' : 'Remplacer' }}
               </button>
               <input type="file" ref="spotImageInput" class="hidden" accept="image/*" @change="handleSpotImageChange" />
@@ -195,12 +202,12 @@ onMounted(fetchMySpots)
             <div class="space-y-4">
               <div class="bg-[#F4F7F5] rounded-xl px-4 py-2.5 border border-transparent focus-within:border-[#00A896]/20 focus-within:bg-white transition-all">
                 <label class="block text-[9px] uppercase tracking-wider text-[#5C756E]/70 font-bold mb-0.5">Nom du lieu</label>
-                <input v-model="spotToEdit.title" type="text" class="w-full bg-transparent text-sm text-[#1E2E2A] outline-none font-medium" />
+                <input v-model="spotToEdit.title" type="text" class="w-full bg-transparent text-sm text-[#1E2E2A] outline-none font-medium" required />
               </div>
 
               <div class="bg-[#F4F7F5] rounded-xl px-4 py-2.5 border border-transparent focus-within:border-[#00A896]/20 focus-within:bg-white transition-all">
                 <label class="block text-[9px] uppercase tracking-wider text-[#5C756E]/70 font-bold mb-0.5">Notes d'exploration</label>
-                <textarea v-model="spotToEdit.description" rows="3" class="w-full bg-transparent text-sm text-[#1E2E2A] outline-none resize-none leading-relaxed pt-0.5"></textarea>
+                <textarea v-model="spotToEdit.description" rows="3" class="w-full bg-transparent text-sm text-[#1E2E2A] outline-none resize-none leading-relaxed pt-0.5" required></textarea>
               </div>
             </div>
 
@@ -215,3 +222,13 @@ onMounted(fetchMySpots)
 
   </div>
 </template>
+
+<style scoped>
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+</style>

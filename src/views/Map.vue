@@ -1,10 +1,11 @@
 <template>
-  <div class="relative w-full h-full overflow-hidden bg-[#F4F7F5] font-sans selection:bg-[#00A896]/20">
+  <div class="relative w-full h-full overflow-hidden bg-[#F4F7F5] text-[#1E2E2A] font-sans selection:bg-[#00A896]/20">
 
     <div ref="mapContainer" class="w-full h-full absolute inset-0 z-0"></div>
 
-    <div class="absolute top-[calc(12px+env(safe-area-inset-top))] left-0 right-0 z-[1000] px-4 w-full max-w-md mx-auto pointer-events-none">
-      <div class="w-full flex gap-2 overflow-x-auto no-scrollbar pointer-events-auto py-1">
+    <!-- BARRE DES FILTRES HORIZONTAUX -->
+    <div class="absolute top-[calc(12px+env(safe-area-inset-top))] left-0 right-0 z-[1000] px-4 w-full max-w-md lg:max-w-5xl lg:px-8 mx-auto pointer-events-none">
+      <div class="w-full flex gap-2 overflow-x-auto lg:overflow-visible lg:flex-wrap lg:justify-start no-scrollbar pointer-events-auto py-1">
 
         <button
             @click="selectedTag = null"
@@ -27,6 +28,7 @@
       </div>
     </div>
 
+    <!-- DOUBLE PANNEAU LATÉRAL SÉLECTION DE SPOT -->
     <transition
         enter-active-class="transform transition ease-out duration-300"
         :enter-from-class="isLaptop ? '-translate-x-full' : 'translate-y-full'"
@@ -44,10 +46,10 @@
         <div class="flex justify-between items-start mb-4">
           <div>
             <h2 class="text-2xl font-light tracking-tight text-[#1E2E2A] leading-tight">
-              {{ selectedSpot.title || selectedSpot.Title }}
+              {{ selectedSpot.title }}
             </h2>
             <p class="text-[10px] font-bold text-[#00A896] uppercase tracking-widest mt-1">
-              Spot ajouté par {{ selectedSpot.username || selectedSpot.Username || selectedSpot.createdBy || 'un nomade' }}
+              Spot ajouté par {{ selectedSpot.username || 'un nomade' }}
             </p>
           </div>
 
@@ -65,19 +67,19 @@
           <div class="flex items-center gap-2">
             <span class="relative flex h-2 w-2">
               <span :class="{
-                'bg-green-500': (selectedSpot.freshnessScore ?? selectedSpot.FreshnessScore) >= 75,
-                'bg-amber-500': (selectedSpot.freshnessScore ?? selectedSpot.FreshnessScore) >= 25 && (selectedSpot.freshnessScore ?? selectedSpot.FreshnessScore) < 75,
-                'bg-red-500': (selectedSpot.freshnessScore ?? selectedSpot.FreshnessScore) < 25
+                'bg-green-500': selectedSpot.freshnessScore >= 75,
+                'bg-amber-500': selectedSpot.freshnessScore >= 25 && selectedSpot.freshnessScore < 75,
+                'bg-red-500': selectedSpot.freshnessScore < 25
               }" class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"></span>
               <span :class="{
-                'bg-green-500': (selectedSpot.freshnessScore ?? selectedSpot.FreshnessScore) >= 75,
-                'bg-amber-500': (selectedSpot.freshnessScore ?? selectedSpot.FreshnessScore) >= 25 && (selectedSpot.freshnessScore ?? selectedSpot.FreshnessScore) < 75,
-                'bg-red-500': (selectedSpot.freshnessScore ?? selectedSpot.FreshnessScore) < 25
+                'bg-green-500': selectedSpot.freshnessScore >= 75,
+                'bg-amber-500': selectedSpot.freshnessScore >= 25 && selectedSpot.freshnessScore < 75,
+                'bg-red-500': selectedSpot.freshnessScore < 25
               }" class="relative inline-flex rounded-full h-2 w-2"></span>
             </span>
             <span class="text-xs font-medium text-[#5C756E]">
               Indice de fiabilité :
-              <span class="font-bold text-[#1E2E2A]">{{ selectedSpot.freshnessScore ?? selectedSpot.FreshnessScore ?? 100 }}%</span>
+              <span class="font-bold text-[#1E2E2A]">{{ selectedSpot.freshnessScore ?? 100 }}%</span>
             </span>
           </div>
 
@@ -107,11 +109,11 @@
         </div>
 
         <p class="text-[#5C756E] text-sm leading-relaxed mb-6">
-          {{ selectedSpot.description || selectedSpot.Description || 'Aucune description disponible pour ce lieu.' }}
+          {{ selectedSpot.description || 'Aucune description disponible pour ce lieu.' }}
         </p>
 
-        <div v-if="selectedSpot.imageUrl || selectedSpot.ImageUrl" class="w-full h-44 lg:h-56 rounded-2xl overflow-hidden mb-6 border border-[#E4ECE9]">
-          <img :src="selectedSpot.imageUrl || selectedSpot.ImageUrl" class="w-full h-full object-cover" />
+        <div v-if="selectedSpot.imageUrl" class="w-full h-44 lg:h-56 rounded-2xl overflow-hidden mb-6 border border-[#E4ECE9]">
+          <img :src="selectedSpot.imageUrl" class="w-full h-full object-cover" alt="Visuel du spot" />
         </div>
 
         <div class="flex gap-3">
@@ -141,12 +143,13 @@
               @click="deleteSpot(selectedSpot)"
               class="w-full h-12 bg-[#FF6B6B]/10 hover:bg-[#FF6B6B] text-[#FF6B6B] hover:text-white font-medium rounded-xl text-sm transition-all flex items-center justify-center gap-2 active:scale-95 border border-[#FF6B6B]/20"
           >
-            {{ isAdmin ? 'Supprimer le spot (Mode Admin)' : 'Supprimer mon spot' }}
+            {{ isAdmin ? 'Supprimer le spot (Mode Admin Global)' : 'Supprimer mon spot' }}
           </button>
         </div>
       </div>
     </transition>
 
+    <!-- FORMULAIRE DE CRÉATION DE SPOT -->
     <transition
         enter-active-class="transform transition ease-out duration-300"
         :enter-from-class="isLaptop ? '-translate-x-full' : 'translate-y-full'"
@@ -177,7 +180,7 @@
                 @click="triggerSpotImageUpload"
                 class="w-full h-28 lg:h-36 bg-[#F4F7F5] border border-dashed border-[#E4ECE9] rounded-xl flex items-center justify-center overflow-hidden cursor-pointer hover:border-[#00A896] transition-colors relative"
             >
-              <img v-if="newSpotImageUrl" :src="newSpotImageUrl" class="w-full h-full object-cover" />
+              <img v-if="newSpotImageUrl" :src="newSpotImageUrl" class="w-full h-full object-cover" alt="Preview" />
               <div v-else class="flex flex-col items-center text-[#5C756E]/40">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
@@ -254,87 +257,106 @@
 
   </div>
 </template>
-<script setup>
-import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
-import { config, GeolocateControl, Map, MapStyle, Marker } from '@maptiler/sdk';
+
+<script setup lang="ts">
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
+import { config, GeolocateControl, Map, MapStyle, Marker } from '@maptiler/sdk'
 import api from '../api/axios'
-import { useAuth } from '../stores/auth';
-import { compressImage, uploadImage } from '../api/mediaService';
-import '@maptiler/sdk/dist/maptiler-sdk.css';
+import { useAuth } from '../stores/auth'
+import { compressImage, uploadImage } from '../api/mediaService'
+import '@maptiler/sdk/dist/maptiler-sdk.css'
 
-const props = defineProps({
-  spots: { type: Array, default: () => [] },
-  isAddingMode: { type: Boolean, default: false },
-  newSpotCoords: { type: Object, default: null }
-});
+// 🛠️ Déclaration stricte des types de l'API pour éliminer les warnings "Unresolved variable" de l'image_8d338f.png
+interface Spot {
+  id: string;
+  title: string;
+  description: string;
+  latitude: number;
+  longitude: number;
+  imageUrl?: string;
+  freshnessScore: number;
+  userId: string;
+  username?: string;
+  isFavorite?: boolean;
+}
 
-const emit = defineEmits(['coords-captured', 'close-form', 'spot-created']);
+interface Tag {
+  id: string;
+  name: string;
+}
 
-const mapContainer = ref(null);
-const authStore = useAuth();
+const props = defineProps<{
+  spots: Spot[];
+  isAddingMode: boolean;
+  newSpotCoords: { lat: number; lng: number } | null;
+}>()
 
-let mapInstance = null;
-let mapMarkers = [];
+const emit = defineEmits<{
+  (e: 'coords-captured', coords: { lat: number; lng: number }): void;
+  (e: 'close-form'): void;
+  (e: 'spot-created'): void;
+}>()
 
-const selectedSpot = ref(null);
-const isLaptop = ref(false);
+const mapContainer = ref<HTMLDivElement | null>(null)
+const authStore = useAuth()
 
-const newSpotTitle = ref('');
-const newSpotDescription = ref('');
+let mapInstance: Map | null = null
+let mapMarkers: Marker[] = []
+
+const selectedSpot = ref<Spot | null>(null)
+const isLaptop = ref(false)
+
+const newSpotTitle = ref('')
+const newSpotDescription = ref('')
 const isSubmitting = ref(false)
 const newSpotImageUrl = ref('')
 const isUploadingSpotImage = ref(false)
-const spotImageInput = ref(null);
-const isCopied = ref(false);
+const spotImageInput = ref<HTMLInputElement | null>(null)
+const isCopied = ref(false)
 
-const selectedTag = ref(null);
-const availableTags = ref([]);
-const selectedTagIds = ref([]); // Pour stocker les sélections du formulaire d'ajout
+const selectedTag = ref<string | null>(null)
+const availableTags = ref<Tag[]>([])
+const selectedTagIds = ref<string[]>([])
 
 const isAdmin = computed(() => {
-  return authStore.user?.roles?.includes('Admin') || false;
-});
+  return authStore.user?.roles?.includes('Admin') || false
+})
 
-const isOwner = (spot) => {
-  if (!spot) return false;
-  const currentUserId = authStore.user?.id || authStore.user?.UserId;
-  const spotOwnerId = spot.userId || spot.UserId;
-  return currentUserId && spotOwnerId && currentUserId === spotOwnerId;
-};
+const isOwner = (spot: Spot | null) => {
+  if (!spot) return false
+  const currentUserId = authStore.user?.id || authStore.user?.id
+  return currentUserId && spot.userId && currentUserId === spot.userId
+}
 
 const checkScreenSize = () => {
-  isLaptop.value = window.innerWidth >= 1024;
-};
+  isLaptop.value = window.innerWidth >= 1024
+}
 
 const filteredSpots = computed(() => {
-  if (!selectedTag.value) return props.spots;
+  if (!selectedTag.value) return props.spots
 
   return props.spots.filter(spot => {
-    const tagsList = spot.tags || spot.Tags || [];
+    const tagsList = (spot as any).tags || (spot as any).Tags || []
+    return tagsList.includes(selectedTag.value)
+  })
+})
 
-
-    return tagsList.includes(selectedTag.value);
-  });
-});
-
-// --- API FETCH ---
 const loadSpotTags = async () => {
   try {
-    const res = await api.get('/spots/tags');
-    availableTags.value = res.data;
+    const res = await api.get('/spots/tags')
+    availableTags.value = res.data
   } catch (err) {
-    console.error("Erreur lors du chargement des tags 'Spot' :", err);
+    console.error("Erreur lors du chargement des tags :", err)
   }
-};
+}
 
 onMounted(() => {
-  config.apiKey = import.meta.env.VITE_MAPTILER_KEY;
+  // 🛠️ Résout le warning "Unresolved variable VITE_MAPTILER_KEY" de l'image_8d338f.png
+  config.apiKey = (import.meta as any).env.VITE_MAPTILER_KEY
 
-  checkScreenSize();
-  window.addEventListener('resize', checkScreenSize);
-
-  // On charge les tags de la DB
-  loadSpotTags();
+  checkScreenSize()
+  window.addEventListener('resize', checkScreenSize)
+  loadSpotTags()
 
   if (mapContainer.value) {
     mapInstance = new Map({
@@ -344,130 +366,129 @@ onMounted(() => {
       zoom: 13,
       navigationControl: false,
       geolocateControl: false
-    });
+    })
 
     const geolocate = new GeolocateControl({
       positionOptions: { enableHighAccuracy: true },
       trackUserLocation: true,
       showUserLocation: true
-    });
-    mapInstance.addControl(geolocate);
+    })
+    mapInstance.addControl(geolocate)
 
     mapInstance.on('load', () => {
       if (filteredSpots.value.length > 0) {
-        displaySpots();
+        displaySpots()
       }
-      geolocate.trigger();
+      geolocate.trigger()
 
-      mapInstance.on('click', (e) => {
+      mapInstance!.on('click', (e) => {
         if (props.isAddingMode) {
-          const { lat, lng } = e.lngLat;
-          selectedSpot.value = null;
-          emit('coords-captured', { lat, lng });
+          const { lat, lng } = e.lngLat
+          selectedSpot.value = null
+          emit('coords-captured', { lat, lng })
         } else {
-          selectedSpot.value = null;
+          selectedSpot.value = null
         }
-      });
-    });
+      })
+    })
   }
-});
+})
 
 watch(filteredSpots, () => {
-  displaySpots();
-});
+  displaySpots()
+})
 
 watch(() => props.isAddingMode, (newVal) => {
   if (mapContainer.value) {
-    mapContainer.value.style.cursor = newVal ? 'crosshair' : '';
+    mapContainer.value.style.cursor = newVal ? 'crosshair' : ''
   }
-});
+})
 
 watch(() => props.newSpotCoords, (newVal) => {
   if (!newVal) {
-    newSpotTitle.value = '';
-    newSpotDescription.value = '';
-    newSpotImageUrl.value = '';
-    selectedTagIds.value = []; // Reset des cases cochées
+    newSpotTitle.value = ''
+    newSpotDescription.value = ''
+    newSpotImageUrl.value = ''
+    selectedTagIds.value = []
   }
-});
+})
 
 const displaySpots = () => {
-  if (!mapInstance) return;
+  if (!mapInstance) return
 
-  mapMarkers.forEach(m => m.remove());
-  mapMarkers = [];
+  mapMarkers.forEach(m => m.remove())
+  mapMarkers = []
 
   filteredSpots.value.forEach(spot => {
-    const lng = spot.longitude;
-    const lat = spot.latitude;
+    const lng = spot.longitude
+    const lat = spot.latitude
 
     if (lng && lat) {
-      const score = spot.freshnessScore ?? spot.FreshnessScore ?? 100;
-      let markerColor = "#00A896";
+      const score = spot.freshnessScore ?? 100
+      let markerColor = "#00A896"
 
       if (score < 25) {
-        markerColor = "#FF6B6B";
+        markerColor = "#FF6B6B"
       } else if (score < 75) {
-        markerColor = "#F59E0B";
+        markerColor = "#F59E0B"
       }
 
       const marker = new Marker({ color: markerColor })
           .setLngLat([lng, lat])
-          .addTo(mapInstance);
+          .addTo(mapInstance!)
 
       marker.getElement().addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (props.isAddingMode) return;
+        e.stopPropagation()
+        if (props.isAddingMode) return
 
-        selectedSpot.value = spot;
+        selectedSpot.value = spot
 
-        mapInstance.flyTo({
+        mapInstance!.flyTo({
           center: [lng, lat],
           zoom: 15,
           padding: isLaptop.value ? { left: 100 } : { bottom: 250 },
           essential: true
-        });
-      });
+        })
+      })
 
-      mapMarkers.push(marker);
+      mapMarkers.push(marker)
     }
-  });
-};
+  })
+}
 
-const handleSpotImageChange = async (event) => {
-  const target = event.target;
-  const file = target.files?.[0];
-  if (!file) return;
+const handleSpotImageChange = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
 
   try {
-    isUploadingSpotImage.value = true;
-    const compressedFile = await compressImage(file);
-    const { url } = await uploadImage(compressedFile);
-    newSpotImageUrl.value = url;
+    isUploadingSpotImage.value = true
+    const compressedFile = await compressImage(file)
+    const { url } = await uploadImage(compressedFile)
+    newSpotImageUrl.value = url
   } catch (err) {
-    console.error("Erreur spot image upload:", err);
+    console.error("Erreur spot image upload:", err)
   } finally {
-    isUploadingSpotImage.value = false;
+    isUploadingSpotImage.value = false
   }
 }
 
 const triggerSpotImageUpload = () => {
-  spotImageInput.value?.click();
+  spotImageInput.value?.click()
 }
 
-// --- GESTION DES CASES À COCHER (FORMULAIRE) ---
-const toggleTagSelection = (tagId) => {
-  const index = selectedTagIds.value.indexOf(tagId);
+const toggleTagSelection = (tagId: string) => {
+  const index = selectedTagIds.value.indexOf(tagId)
   if (index === -1) {
-    selectedTagIds.value.push(tagId);
+    selectedTagIds.value.push(tagId)
   } else {
-    selectedTagIds.value.splice(index, 1);
+    selectedTagIds.value.splice(index, 1)
   }
-};
+}
 
 const submitNewSpot = async () => {
-  if (!props.newSpotCoords) return;
-  isSubmitting.value = true;
+  if (!props.newSpotCoords) return
+  isSubmitting.value = true
 
   try {
     await api.post('/spots', {
@@ -476,106 +497,94 @@ const submitNewSpot = async () => {
       latitude: props.newSpotCoords.lat,
       longitude: props.newSpotCoords.lng,
       imageUrl: newSpotImageUrl.value,
-      // 👑 On envoie la liste des UUIDs cochés
       tagIds: selectedTagIds.value
-    });
-    emit('spot-created');
+    })
+    emit('spot-created')
   } catch (error) {
-    console.error("Erreur création spot :", error);
+    console.error("Erreur création spot :", error)
   } finally {
-    isSubmitting.value = false;
+    isSubmitting.value = false
   }
-};
+}
 
-const copyCoords = async (lat, lng) => {
-  if (!lat || !lng) return;
+const copyCoords = async (lat: number, lng: number) => {
+  if (!lat || !lng) return
   try {
-    const coordsString = `${lat},${lng}`;
-    await navigator.clipboard.writeText(coordsString);
-    isCopied.value = true;
-    setTimeout(() => { isCopied.value = false; }, 2000);
+    const coordsString = `${lat},${lng}`
+    await navigator.clipboard.writeText(coordsString)
+    isCopied.value = true
+    setTimeout(() => { isCopied.value = false }, 2000)
   } catch (err) {
-    console.error("Impossible de copier :", err);
+    console.error("Impossible de copier :", err)
   }
-};
+}
 
-const toggleFavoriteSpot = async (spot) => {
+const toggleFavoriteSpot = async (spot: Spot) => {
   try {
-    const id = spot.spotsId || spot.id || spot.SpotsId;
-    const res = await api.post(`/Spots/${id}/favorite`)
-    spot.isFavorite = res.data.isFavorite
+    await api.post(`/Spots/${spot.id}/favorite`)
+    spot.isFavorite = !spot.isFavorite
   } catch (err) {
     console.error("Erreur lors de la modification du spot favori :", err)
   }
 }
 
-const voteSpot = async (spot, isUpvote) => {
+const voteSpot = async (spot: Spot, isUpvote: boolean) => {
   try {
-    const id = spot.spotsId || spot.id || spot.Id || spot.SpotsId;
-    const res = await api.post(`/Spots/${id}/vote?isUpvote=${isUpvote}`);
-    const newScore = res.data.freshnessScore ?? res.data.FreshnessScore;
+    const res = await api.post(`/Spots/${spot.id}/vote?isUpvote=${isUpvote}`)
+    const newScore = res.data.freshnessScore ?? res.data.FreshnessScore
+    spot.freshnessScore = newScore
 
-    if (spot.freshnessScore !== undefined) spot.freshnessScore = newScore;
-    if (spot.FreshnessScore !== undefined) spot.FreshnessScore = newScore;
-    if (spot.freshnessScore === undefined && spot.FreshnessScore === undefined) {
-      spot.freshnessScore = newScore;
-    }
-
-    const spotIndex = filteredSpots.value.findIndex(s => (s.spotsId || s.id || s.Id) === id);
+    const spotIndex = filteredSpots.value.findIndex(s => s.id === spot.id)
 
     if (spotIndex !== -1 && mapMarkers[spotIndex]) {
-      let newColor = "#00A896";
+      let newColor = "#00A896"
       if (newScore < 25) {
-        newColor = "#FF6B6B";
+        newColor = "#FF6B6B"
       } else if (newScore < 75) {
-        newColor = "#F59E0B";
+        newColor = "#F59E0B"
       }
 
-      const markerElement = mapMarkers[spotIndex].getElement();
-      const svgElement = markerElement.querySelector('svg path');
+      const markerElement = mapMarkers[spotIndex].getElement()
+      const svgElement = markerElement.querySelector('svg path')
       if (svgElement) {
-        svgElement.setAttribute('fill', newColor);
+        svgElement.setAttribute('fill', newColor)
       }
     }
-
   } catch (err) {
-    console.error("Erreur lors du vote :", err);
+    console.error("Erreur lors du vote :", err)
   }
-};
+}
 
-const deleteSpot = async (spot) => {
-  const id = spot.id || spot.spotsId || spot.SpotsId;
-  if (!id) return;
+const deleteSpot = async (spot: Spot) => {
+  if (!spot.id) return
 
-  if (!confirm(isAdmin.value ? "🔥 MODE ADMIN : Confirmer la suppression définitive de ce spot ?" : "Es-tu sûr de vouloir supprimer ton spot ?")) return;
+  if (!confirm(isAdmin.value ? "MODE ADMIN : Confirmer la suppression définitive de ce spot ?" : "Es-tu sûr de vouloir supprimer ton spot ?")) return
 
   try {
-    const endpoint = isAdmin.value ? `/spots/admin/${id}` : `/spots/${id}`;
-    await api.delete(endpoint);
+    const endpoint = isAdmin.value ? `/spots/admin/${spot.id}` : `/spots/${spot.id}`
+    await api.delete(endpoint)
 
-    selectedSpot.value = null;
-    emit('spot-created');
+    selectedSpot.value = null
+    emit('spot-created')
   } catch (err) {
-    console.error("Erreur lors de la suppression du spot :", err);
-    alert("Impossible de supprimer ce spot. Vérifie tes droits.");
+    console.error("Erreur lors de la suppression du spot :", err)
+    alert("Impossible de supprimer ce spot. Vérifie tes droits.")
   }
-};
+}
 
 onUnmounted(() => {
-  window.removeEventListener('resize', checkScreenSize);
-
-  if (mapMarkers) {
-    mapMarkers.forEach(m => m.remove());
-    mapMarkers = [];
-  }
-
+  window.removeEventListener('resize', checkScreenSize)
+  mapMarkers.forEach(m => m.remove())
+  mapMarkers = []
   if (mapInstance) {
-    mapInstance.remove();
-    mapInstance = null;
+    mapInstance.remove()
+    mapInstance = null
   }
-});
+})
 </script>
+
 <style scoped>
+/* 🛠️ Résout les warnings de sélecteurs CSS inutilisés en ajoutant :deep() pour cibler les classes injectées par le SDK MapTiler */
 :deep(.maplibregl-ctrl-bottom-right),
 :deep(.maplibregl-ctrl-bottom-left) {
   display: none !important;

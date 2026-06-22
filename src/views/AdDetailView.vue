@@ -22,12 +22,13 @@
 
       <div v-else-if="ad" class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white border border-[#E4ECE9] rounded-[2rem] md:rounded-[3rem] p-5 md:p-8 shadow-sm items-stretch">
 
-        <div v-if="ad.imageUrl" class="w-full h-64 md:h-full min-h-[300px] md:min-h-[450px] rounded-2xl md:rounded-[2rem] overflow-hidden border border-[#E4ECE9] bg-[#F4F7F5]">
+        <div v-if="ad.imageUrl" class="w-full h-64 md:h-full min-h-[300px] md:min-h-[450px] lg:max-h-[calc(100vh-160px)] rounded-2xl md:rounded-[2rem] overflow-hidden border border-[#E4ECE9] bg-[#F4F7F5]">
           <img :src="ad.imageUrl" class="w-full h-full object-cover" alt="Article" />
         </div>
 
         <div class="flex flex-col justify-between space-y-5 pt-2 md:pt-0">
           <div class="space-y-5">
+
             <div class="flex justify-between items-start gap-4 border-b border-[#E4ECE9]/60 pb-4">
               <div class="min-w-0 flex-1">
                 <h2 class="text-xl md:text-2xl font-semibold tracking-tight text-[#1E2E2A] leading-tight truncate">
@@ -67,7 +68,9 @@
               target="_blank"
               class="w-full h-12 bg-[#00A896] hover:bg-[#009485] text-white rounded-xl flex items-center justify-center text-xs font-medium active:scale-95 transition-all shadow-sm gap-2 mt-4 md:mt-0"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12.001c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12.001c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
             Contacter et lancer la discussion
           </a>
         </div>
@@ -80,36 +83,46 @@
     </div>
   </div>
 </template>
-<script setup>
+
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import api from '@/api/axios'
+import { useRoute, useRouter } from 'vue-router'
+import api from '../api/axios'
 
 const route = useRoute()
-const ad = ref(null)
+const router = useRouter()
 const loading = ref(true)
+const ad = ref<any>(null)
 
-const generateContactLink = (contact, adTitle) => {
-  if (!contact) return '#'
-  const message = `Bonjour, je te contacte pour l'annonce "${adTitle}" vue sur StreetPacker...`
+// Récupération de l'ID utilisateur connecté pour masquer/afficher certaines fonctionnalités au besoin
+const currentUserId = localStorage.getItem('userId')
 
-  if (contact.includes('@')) {
-    return `mailto:${contact}?subject=${encodeURIComponent('StreetPacker - Matériel')}&body=${encodeURIComponent(message)}`
-  }
-
-  const cleanNumber = contact.replace(/[^0-9]/g, '')
-  return `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`
-}
-
-onMounted(async () => {
+const fetchAdDetail = async () => {
   try {
     loading.value = true
-    const res = await api.get(`/Ads/${route.params.id}`)
+    const adId = route.params.id
+    const res = await api.get(`/Ads/${adId}`)
     ad.value = res.data
   } catch (err) {
-    console.error("Erreur chargement détails annonce:", err)
+    console.error("Erreur lors de la récupération des détails de l'annonce :", err)
   } finally {
     loading.value = false
   }
+}
+
+// Génération du lien Whatsapp/Telegram ou autre avec un petit message pré-rempli
+const generateContactLink = (link: string, title: string) => {
+  if (!link) return '#'
+  const message = encodeURIComponent(`Salut ! Je suis intéressé par ton annonce "${title}" sur StreetPacker. Est-elle toujours disponible ?`)
+
+  // Si c'est un numéro ou lien Whatsapp de base, on y injecte proprement le message
+  if (link.includes('wa.me') && !link.includes('text=')) {
+    return link.includes('?') ? `${link}&text=${message}` : `${link}?text=${message}`
+  }
+  return link
+}
+
+onMounted(() => {
+  fetchAdDetail()
 })
 </script>
