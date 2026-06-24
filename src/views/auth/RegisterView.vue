@@ -22,7 +22,6 @@ const handleRegister = async () => {
   loading.value = true
 
   try {
-    // L'URL relative suffit si ton instance axios a déjà la baseURL configurée
     await api.post('/auth/register', {
       username: username.value,
       email: email.value,
@@ -39,19 +38,14 @@ const handleRegister = async () => {
 </script>
 
 <template>
-  <!-- h-screen et overflow-hidden empêchent le scroll global de la page -->
   <div class="h-screen w-screen bg-[#F4F7F5] text-[#1E2E2A] flex items-center justify-center font-sans relative overflow-hidden selection:bg-[#00A896]/20">
 
-    <!-- Touche Tropicale Radicale : Halos ultra-flous en arrière-plan -->
     <div class="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-[#FF6B6B]/10 blur-[100px] pointer-events-none"></div>
     <div class="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-[#00A896]/10 blur-[100px] pointer-events-none"></div>
 
-    <!-- Conteneur principal bridé en hauteur max -->
     <div class="w-full max-w-5xl px-6 h-full max-h-[850px] flex flex-col lg:flex-row lg:items-center justify-center lg:justify-between gap-8 lg:gap-16 z-10 py-4">
 
-      <!-- Section Gauche : Message & Retour -->
       <div class="flex flex-col items-start justify-center shrink-0">
-        <!-- Bouton Retour Minimaliste -->
         <div class="mb-4 lg:mb-8">
           <button
               @click="router.push('/')"
@@ -72,14 +66,12 @@ const handleRegister = async () => {
         </div>
       </div>
 
-      <!-- Section Droite : Boîtier Formulaire PWA -->
-      <!-- overflow-y-auto au cas où un très petit écran (type iPhone SE) manque de place en hauteur -->
+
       <div class="w-full max-w-md mx-auto lg:mx-0 overflow-y-auto max-h-[75vh] lg:max-h-none no-scrollbar shrink-0">
         <form @submit.prevent="handleRegister" class="flex flex-col gap-5 bg-white border border-[#E4ECE9] p-6 lg:p-10 rounded-[2rem] shadow-sm">
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
 
-            <!-- Input Username -->
             <div class="relative border-b border-[#E4ECE9] focus-within:border-[#00A896] transition-colors pb-1 sm:col-span-2">
               <label class="block text-[10px] uppercase tracking-[0.2em] text-[#5C756E] font-semibold mb-1">Username</label>
               <input
@@ -90,7 +82,6 @@ const handleRegister = async () => {
               />
             </div>
 
-            <!-- Input Email -->
             <div class="relative border-b border-[#E4ECE9] focus-within:border-[#00A896] transition-colors pb-1 sm:col-span-2">
               <label class="block text-[10px] uppercase tracking-[0.2em] text-[#5C756E] font-semibold mb-1">Email</label>
               <input
@@ -101,7 +92,6 @@ const handleRegister = async () => {
               />
             </div>
 
-            <!-- Input Mot de passe -->
             <div class="relative border-b border-[#E4ECE9] focus-within:border-[#FF6B6B] transition-colors pb-1">
               <label class="block text-[10px] uppercase tracking-[0.2em] text-[#5C756E] font-semibold mb-1">Mot de passe</label>
               <input
@@ -112,7 +102,6 @@ const handleRegister = async () => {
               />
             </div>
 
-            <!-- Input Confirmer -->
             <div class="relative border-b border-[#E4ECE9] focus-within:border-[#FF6B6B] transition-colors pb-1">
               <label class="block text-[10px] uppercase tracking-[0.2em] text-[#FF6B6B] font-semibold mb-1">Confirmer</label>
               <input
@@ -124,14 +113,12 @@ const handleRegister = async () => {
             </div>
           </div>
 
-          <!-- Message d'erreur discret -->
           <transition name="fade">
             <p v-if="error" class="text-[#FF6B6B] text-xs font-medium text-center bg-[#FF6B6B]/5 py-2.5 rounded-xl border border-[#FF6B6B]/10 my-0">
               {{ error }}
             </p>
           </transition>
 
-          <!-- Bouton d'action principal -->
           <div class="pt-1">
             <button
                 type="submit"

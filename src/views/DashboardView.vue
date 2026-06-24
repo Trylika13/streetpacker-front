@@ -5,35 +5,29 @@ import Map from "@/views/Map.vue";
 import NavBar from "@/views/NavBar.vue";
 
 const spots = shallowRef([]);
-// Ajouter les états pour la gestion de l'ajout d'un spot
 const isAddingMode = ref(false);
 const newSpotCoords = ref(null);
 
 // Charger les spots ET les favoris en parallèle
-// Charger les spots ET les favoris en parallèle
 const fetchSpots = async () => {
   try {
-    // 🛠️ Ligne 'loading.value = true' SUPPRIMÉE ici !
 
     const [spotsResponse, favoritesResponse] = await Promise.all([
       api.get('/Spots'),
       api.get('/Spots/favorites').catch(() => ({ data: [] }))
     ]);
 
-    // ... le reste de ta fonction fetchSpots reste identique
 
-    // 🛠️ On crée un Set avec les IDs de tes spots favoris (gestion du fallback spotsId ou id)
     const favoriteSpotIds = new Set(
         favoritesResponse.data?.map(fav => fav.spotsId || fav.id) || []
     );
 
-    // 🛠️ On injecte la propriété 'isFavorite' directement dans chaque spot
     if (spotsResponse.data && Array.isArray(spotsResponse.data)) {
       spots.value = spotsResponse.data.map(spot => {
         const id = spot.spotsId || spot.id;
         return {
           ...spot,
-          spotsId: id, // Sécurité pour s'assurer que spotsId est toujours défini
+          spotsId: id,
           isFavorite: favoriteSpotIds.has(id)
         };
       });
@@ -57,13 +51,13 @@ const fetchSpots = async () => {
 const handleAddSpotClick = () => {
   isAddingMode.value = !isAddingMode.value;
   if (!isAddingMode.value) {
-    newSpotCoords.value = null; // Reset si l'utilisateur annule en cliquant à nouveau sur la nav
+    newSpotCoords.value = null;
   }
 };
 
 const handleCoordsCaptured = (coords) => {
   newSpotCoords.value = coords;
-  isAddingMode.value = false; // On a les coordonnées, on coupe le mode "ciblage" pour ouvrir le formulaire
+  isAddingMode.value = false;
 };
 
 const handleCloseForm = () => {
@@ -73,7 +67,7 @@ const handleCloseForm = () => {
 // Fonction pour rafraîchir la liste après une création réussie
 const handleSpotCreated = () => {
   newSpotCoords.value = null;
-  fetchSpots(); // On recharge les marqueurs pour voir le nouveau apparaître sur la carte !
+  fetchSpots();
 };
 
 onMounted(() => {
@@ -81,13 +75,9 @@ onMounted(() => {
 });
 </script>
 <template>
-  <!--
-    h-[100dvh] : force l'écran à faire exactement la taille de la zone d'affichage mobile sans bouger avec la barre d'adresse du navigateur.
-    overflow-hidden : interdit tout défilement vertical parasite de la page complète.
-  -->
+
   <div class="relative h-[100dvh] w-full bg-[#F4F7F5] text-[#1E2E2A] overflow-hidden font-sans antialiased selection:bg-[#00A896]/20">
 
-    <!-- BANDEAU D'AIDE : Refait aux couleurs de ton accueil (#FF6B6B) avec un style épuré fin -->
     <transition name="slide-down">
       <div
           v-if="isAddingMode"
@@ -99,7 +89,6 @@ onMounted(() => {
       </div>
     </transition>
 
-    <!-- CONTAINER CARTE : Prend 100% de la hauteur verrouillée -->
     <main class="w-full h-full z-0">
       <Map
           :spots="spots"

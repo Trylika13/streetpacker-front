@@ -1,8 +1,5 @@
 <template>
-  <!--
-    Sur mobile : fixed bottom-0 left-0 right-0 h-16 w-full border-t
-    Sur laptop (lg:) : On surélève légèrement le dock pour un effet premium, on ajuste la largeur pour qu'il ne soit pas trop écrasé, et on harmonise l'ombre.
-  -->
+
   <nav class="fixed bottom-[calc(8px+env(safe-area-inset-bottom))] lg:bottom-6 left-1/2 -translate-x-1/2 h-16 w-[calc(100%-32px)] max-w-md lg:w-[420px] bg-white/80 backdrop-blur-md border border-[#E4ECE9] rounded-2xl z-[2000] px-6 shadow-md lg:shadow-[0_10px_30px_rgba(9,17,14,0.06)]">
     <div class="flex justify-between items-center h-full max-w-md mx-auto relative">
 
@@ -18,11 +15,7 @@
         <span class="text-[9px] font-medium mt-1 uppercase tracking-wider">MarketPlace</span>
       </router-link>
 
-      <!-- BOUTON CENTRAL : AJOUTER UN SPOT -->
-      <!--
-        Optimisation Laptop : Sur mobile, la bordure est blanche/sable pour couper l'écran.
-        Sur PC, la barre flotte. On remplace donc la bordure opaque par une bordure blanche pure ou transparente (lg:border-white) pour éviter l'effet "troué".
-      -->
+
       <div class="relative -top-4">
         <button
             @click="$emit('add-spot')"

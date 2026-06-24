@@ -1,11 +1,9 @@
 <template>
   <div class="min-h-screen bg-[#F4F7F5] text-[#1E2E2A] pb-24 lg:pb-0 font-sans lg:flex lg:items-stretch selection:bg-[#00A896]/10">
 
-    <!-- SIDEBAR LEFT (DESKTOP / MOBILE RESPONSIVE SÉCURISÉ) -->
     <div class="p-6 pb-6 pt-[calc(24px+env(safe-area-inset-top))] bg-white border-b lg:border-b-0 lg:border-r border-[#E4ECE9] relative lg:w-80 lg:shrink-0 lg:flex lg:flex-col lg:h-screen lg:sticky lg:top-0 lg:pt-16">
       <div class="flex flex-col items-center mt-4 lg:mt-0 w-full">
 
-        <!-- 🛠️ CORRECTION DU BOUTON RETOUR : Aligné dynamiquement sur la zone sécurisée de l'encoche -->
         <div class="absolute top-[calc(16px+env(safe-area-inset-top))] lg:top-6 left-6">
           <button @click="router.push('/dashboard')" class="group p-2 bg-[#F4F7F5] rounded-full text-[#5C756E]/60 hover:text-[#00A896] transition-colors flex items-center justify-center" title="Tableau de bord">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:-translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -14,7 +12,6 @@
           </button>
         </div>
 
-        <!-- Profil -->
         <div class="w-20 h-20 rounded-full border border-[#E4ECE9] bg-[#F4F7F5] flex items-center justify-center shadow-sm overflow-hidden mb-3">
           <img v-if="user.avatarUrl" :src="user.avatarUrl" alt="Avatar" class="w-full h-full object-cover" />
           <span v-else class="text-xl font-light text-[#5C756E]">{{ user.username ? user.username.charAt(0).toUpperCase() : '?' }}</span>
@@ -29,20 +26,17 @@
         </span>
       </div>
 
-      <!-- Déconnexion Desktop -->
       <div class="hidden lg:block w-full pt-6 border-t border-[#E4ECE9] mt-auto">
         <button @click="logout" class="w-full h-10 bg-[#F4F7F5] text-[#5C756E] border border-[#E4ECE9] rounded-xl font-medium text-xs tracking-wider active:scale-95 transition-all">Déconnexion</button>
       </div>
     </div>
 
-    <!-- MAIN CONTENT -->
     <div class="flex-1 p-4 lg:p-12 lg:max-w-5xl mx-auto w-full flex flex-col justify-center">
 
       <h3 class="text-[10px] uppercase tracking-[0.2em] text-[#5C756E] font-bold mb-6 px-1 hidden lg:block">Tableau de bord</h3>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 
-        <!-- COLONNE GAUCHE LAPTOP : MON ACTIVITÉ -->
         <div class="space-y-4">
           <h3 class="text-[10px] uppercase tracking-[0.2em] text-[#5C756E] font-bold px-1 lg:hidden">Mon Activité</h3>
 
@@ -77,13 +71,11 @@
           </div>
         </div>
 
-        <!-- COLONNE DROITE LAPTOP : FAVORIS & RÉGLAGES -->
         <div class="space-y-6">
           <div>
             <h3 class="text-[10px] uppercase tracking-[0.2em] text-[#5C756E] font-bold mb-3 px-1">Mes Favoris</h3>
             <div class="bg-white rounded-2xl border border-[#E4ECE9] overflow-hidden shadow-[0_4px_20px_rgba(9,17,14,0.01)]">
 
-              <!-- Spots Favoris -->
               <button @click="router.push('/profile/favorites?tab=spots')" class="w-full px-5 h-14 flex items-center justify-between border-b border-[#E4ECE9] hover:bg-[#F4F7F5]/50 active:bg-[#F4F7F5] transition-colors text-left text-sm group">
                 <span class="flex items-center gap-3 text-[#1E2E2A]">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#5C756E]/70 group-hover:text-[#00A896] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -98,7 +90,6 @@
                 </span>
               </button>
 
-              <!-- Annonces Favorites -->
               <button @click="router.push('/profile/favorites?tab=ads')" class="w-full px-5 h-14 flex items-center justify-between hover:bg-[#F4F7F5]/50 active:bg-[#F4F7F5] transition-colors text-left text-sm group">
                 <span class="flex items-center gap-3 text-[#1E2E2A]">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#5C756E]/70 group-hover:text-[#00A896] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -114,7 +105,6 @@
             </div>
           </div>
 
-          <!-- Configuration du profil -->
           <div>
             <h3 class="text-[10px] uppercase tracking-[0.2em] text-[#5C756E] font-bold mb-3 px-1">Réglages</h3>
             <div class="bg-white rounded-2xl border border-[#E4ECE9] overflow-hidden shadow-[0_4px_20px_rgba(9,17,14,0.01)]">
@@ -134,7 +124,6 @@
 
       </div>
 
-      <!-- Déconnexion Mobile -->
       <button @click="logout" class="lg:hidden w-full h-12 bg-white text-[#FF6B6B] border border-[#E4ECE9] rounded-xl font-medium text-xs tracking-wider active:scale-95 transition-all pt-0.5 shadow-sm mt-6">
         Se déconnecter de l'aventure
       </button>
