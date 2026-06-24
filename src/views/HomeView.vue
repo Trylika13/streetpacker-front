@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import geckoLogo from '@/assets/gecko.svg';
+import InstallPwaPrompt from "../components/InstallPwaPrompt.vue";
 const router = useRouter();
 </script>
 
@@ -22,7 +23,7 @@ const router = useRouter();
         </h1>
 
         <p class="text-sm text-[#5C756E] leading-relaxed">
-          Partage tes spots cachés, localise les points d'eau essentiels et voyage hors des sentiers battus. Conçu par et pour les backpackers.
+          Partage tes spots cachés, localise les points d'eau et voyage hors des sentiers battus. Conçu par et pour les backpackers.
         </p>
       </div>
 
@@ -52,6 +53,7 @@ const router = useRouter();
       </div>
 
     </div>
+    <install-pwa-prompt/>
   </div>
 </template>
 
