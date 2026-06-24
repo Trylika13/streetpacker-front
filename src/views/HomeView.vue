@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import geckoLogo from '@/assets/gecko.svg';
+import InstallPwaPrompt from "../components/InstallPwaPrompt.vue";
 const router = useRouter();
 </script>
 
@@ -52,6 +53,7 @@ const router = useRouter();
       </div>
 
     </div>
+    <install-pwa-prompt/>
   </div>
 </template>
 
