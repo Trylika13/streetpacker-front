@@ -2,10 +2,10 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import api from "../../api/axios"
-import { useAuth } from '../../stores/auth' // 👑 Import de ton store d'authentification
+import { useAuth } from '../../stores/auth' //
 
 const router = useRouter()
-const authStore = useAuth() // 👑 Initialisation du store Pinia
+const authStore = useAuth()
 
 const username = ref('')
 const password = ref('')

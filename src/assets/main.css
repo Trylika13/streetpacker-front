@@ -9,7 +9,10 @@ html, body, #app {
   height: 100%;
   width: 100%;
 }
-
+html, body {
+  background-color: #F4F7F5 !important;
+  overscroll-behavior: none;
+}
 
 body {
   margin: 0;

@@ -33,9 +33,7 @@ const fetchSpots = async () => {
       });
     }
 
-    console.log("Spots avec état favori prêts pour la Map :", spots.value);
   } catch (error) {
-    console.error("Erreur lors de la récup des spots :", error);
     spots.value = [{
       id: 0,
       spotsId: 0,
