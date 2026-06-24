@@ -3,7 +3,6 @@
 
     <div ref="mapContainer" class="w-full h-full absolute inset-0 z-0"></div>
 
-    <!-- BARRE DES FILTRES HORIZONTAUX -->
     <div class="absolute top-[calc(12px+env(safe-area-inset-top))] left-0 right-0 z-[1000] px-4 w-full max-w-md lg:max-w-5xl lg:px-8 mx-auto pointer-events-none">
       <div class="w-full flex gap-2 overflow-x-auto lg:overflow-visible lg:flex-wrap lg:justify-start no-scrollbar pointer-events-auto py-1">
 
@@ -28,7 +27,6 @@
       </div>
     </div>
 
-    <!-- DOUBLE PANNEAU LATÉRAL SÉLECTION DE SPOT -->
     <transition
         enter-active-class="transform transition ease-out duration-300"
         :enter-from-class="isLaptop ? '-translate-x-full' : 'translate-y-full'"
@@ -149,7 +147,6 @@
       </div>
     </transition>
 
-    <!-- FORMULAIRE DE CRÉATION DE SPOT -->
     <transition
         enter-active-class="transform transition ease-out duration-300"
         :enter-from-class="isLaptop ? '-translate-x-full' : 'translate-y-full'"
@@ -266,7 +263,6 @@ import { useAuth } from '../stores/auth'
 import { compressImage, uploadImage } from '../api/mediaService'
 import '@maptiler/sdk/dist/maptiler-sdk.css'
 
-// 🛠️ Déclaration stricte des types de l'API pour éliminer les warnings "Unresolved variable" de l'image_8d338f.png
 interface Spot {
   id: string;
   title: string;
@@ -351,7 +347,6 @@ const loadSpotTags = async () => {
 }
 
 onMounted(() => {
-  // 🛠️ Résout le warning "Unresolved variable VITE_MAPTILER_KEY" de l'image_8d338f.png
   config.apiKey = (import.meta as any).env.VITE_MAPTILER_KEY
 
   checkScreenSize()
@@ -584,7 +579,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* 🛠️ Résout les warnings de sélecteurs CSS inutilisés en ajoutant :deep() pour cibler les classes injectées par le SDK MapTiler */
 :deep(.maplibregl-ctrl-bottom-right),
 :deep(.maplibregl-ctrl-bottom-left) {
   display: none !important;

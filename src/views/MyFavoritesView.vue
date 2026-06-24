@@ -26,7 +26,7 @@ const loading = ref(true)
 const favoriteSpots = ref<FavoriteSpot[]>([])
 const favoriteAds = ref<FavoriteAd[]>([])
 
-// Supprimer un spot des favoris (Appel de ton Toggle en POST)
+// Supprimer un spot des favoris
 const removeSpotFavorite = async (spotId: string) => {
   try {
     await api.post(`/Spots/${spotId}/favorite`) // POST car c'est un Toggle côté .NET
@@ -36,7 +36,7 @@ const removeSpotFavorite = async (spotId: string) => {
   }
 }
 
-// Supprimer une annonce des favoris (Appel de ton Toggle en POST)
+// Supprimer une annonce des favoris
 const removeAdFavorite = async (adId: string) => {
   try {
     await api.post(`/Ads/${adId}/favorite`) // Route minuscules pour l'API standard et POST pour le Toggle

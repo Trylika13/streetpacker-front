@@ -5,18 +5,17 @@ import api from '@/api/axios'
 
 const router = useRouter()
 
-// Variables réactives fondamentales
 const ads = ref([])
 const loading = ref(false)
-const loadingMore = ref(false) // Traquer le chargement du paquet suivant
+const loadingMore = ref(false)
 const errorMessage = ref('')
 const currentUserId = localStorage.getItem('userId')
 const favoriteAdIds = ref(new Set())
 
 // Variables de pagination
 const currentPage = ref(1)
-const pageSize = ref(12) // Paquets de 12 annonces
-const hasMoreAds = ref(true) // Est-ce qu'il reste des annonces à charger sur l'API ?
+const pageSize = ref(12)
+const hasMoreAds = ref(true)
 
 const selectedTag = ref(null)
 const availableTags = ref([])
@@ -85,7 +84,6 @@ const fetchInitialAdsAndFavorites = async () => {
   }
 }
 
-// Charger le paquet d'annonces suivant (Page 2, 3, etc.)
 const fetchMoreAds = async () => {
   if (loadingMore.value || !hasMoreAds.value || loading.value) return
 

@@ -13,7 +13,6 @@ const router = useRouter();
     <div class="w-full max-w-5xl px-6 py-12 flex flex-col lg:flex-row lg:items-center justify-between gap-16 z-10">
 
       <div class="flex flex-col items-start max-w-sm">
-        <!-- 🦎 LOGO AGRANDI : Passage en w-14 h-14 pour asseoir l'identité visuelle de StreetPacker -->
         <div class="flex items-center gap-3 mb-6 opacity-95">
           <img :src="geckoLogo" alt="StreetPacker Gecko" class="w-14 h-14 object-contain" />
         </div>

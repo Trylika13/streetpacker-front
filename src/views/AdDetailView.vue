@@ -132,7 +132,7 @@ const generateContactLink = (contact: string, adTitle: string) => {
     return contact
   }
 
-  // Cas 3 : C'est un numéro WhatsApp brut (ex: 32470123456) renvoyé par l'API
+  // Cas 3 : C'est un numéro WhatsApp brut renvoyé par l'API
   const cleanNumber = contact.replace(/[^0-9]/g, '')
   return `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`
 }
