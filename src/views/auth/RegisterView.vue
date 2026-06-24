@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import api from "../../api/axios";
+import {useAuth} from "../../stores/auth";
 
 const router = useRouter()
 const username = ref('')
@@ -10,6 +11,7 @@ const password = ref('')
 const confirmPassword = ref('')
 const error = ref<string | null>(null)
 const loading = ref(false)
+const authStore = useAuth()
 
 const handleRegister = async () => {
   error.value = null
@@ -28,7 +30,17 @@ const handleRegister = async () => {
       password: password.value
     })
 
-    router.push('/login')
+    const loginResponse = await api.post('/Auth/login', {
+      username: username.value,
+      password: password.value
+    })
+
+    const token = loginResponse.data.accessToken || loginResponse.data.accessToken
+
+    authStore.authenticate(token)
+
+    await router.push('/dashboard')
+
   } catch (err: any) {
     error.value = err.response?.data?.message || "Erreur lors de l'aventure... Réessaie !"
   } finally {
