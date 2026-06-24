@@ -23,7 +23,7 @@ const router = useRouter();
         </h1>
 
         <p class="text-sm text-[#5C756E] leading-relaxed">
-          Partage tes spots cachés, localise les points d'eau essentiels et voyage hors des sentiers battus. Conçu par et pour les backpackers.
+          Partage tes spots cachés, localise les points d'eau et voyage hors des sentiers battus. Conçu par et pour les backpackers.
         </p>
       </div>
 

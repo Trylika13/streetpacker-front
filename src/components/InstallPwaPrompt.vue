@@ -34,7 +34,6 @@
           </button>
         </div>
 
-        <!-- Contenu selon plateforme -->
         <div class="px-4 pb-4">
           <!-- Cas Android / Desktop avec prompt natif disponible -->
           <div v-if="canInstallNatively">
