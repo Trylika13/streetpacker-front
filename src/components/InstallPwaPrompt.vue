@@ -34,6 +34,7 @@
           </button>
         </div>
 
+        <!-- Contenu selon plateforme -->
         <div class="px-4 pb-4">
           <!-- Cas Android / Desktop avec prompt natif disponible -->
           <div v-if="canInstallNatively">
@@ -146,7 +147,6 @@ async function triggerNativeInstall(): Promise<void> {
 }
 
 function handleBeforeInstallPrompt(event: Event): void {
-  console.log('[PWA] beforeinstallprompt reçu')
   event.preventDefault()
   deferredPrompt = event as BeforeInstallPromptEvent
   canInstallNatively.value = true
@@ -160,15 +160,11 @@ function handleAppInstalled(): void {
 }
 
 onMounted(() => {
-  console.log('[PWA] composant monté | standalone:', isStandalone(), '| dismissed:', wasDismissed())
-
   if (isStandalone() || wasDismissed()) {
-    console.log('[PWA] arrêt ici, condition de sortie remplie')
     return
   }
 
   isIos.value = detectIos()
-  console.log('[PWA] isIos:', isIos.value)
 
   window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
   window.addEventListener('appinstalled', handleAppInstalled)
@@ -178,7 +174,6 @@ onMounted(() => {
   if (isIos.value) {
     setTimeout(() => {
       if (!wasDismissed() && !isStandalone()) {
-        console.log('[PWA] affichage forcé iOS')
         showPrompt.value = true
       }
     }, 1200)
